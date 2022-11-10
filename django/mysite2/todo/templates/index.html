@@ -24,9 +24,9 @@
                                 <div class="container">
                                     <div class="col-6">
                                         <div class="form-outline">
-                                            <input type="text" id="form1" class="form-control" />
+                                            <input type="text" id="form1" class="form-control" id="new-todo-input"/>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Save</button>
+                                        <button type="submit" class="btn btn-primary" id="insert-todo">Save</button>
                                         <button type="submit" class="btn btn-warning">Get tasks</button>
                                     </div>
                                 </div>
@@ -40,9 +40,9 @@
                                         <th scope="col">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="todo-list">
                                     {% for todo in todos %}
-                                        <tr>
+                                        <tr id="todo-{{todo.id}}-row">
                                             <th scope="row">{{todo.id}}</th>
                                             <td>{{todo.title}}</td>
                                             <td>{{todo.done}}</td>
@@ -64,18 +64,31 @@
     </div>
     {% csrf_token %}
     <script>
+        // this is a test for how deletetodo is supposed to work
+        function insertTodo(data) {
+            data = [{"model": "todo.todo", "pk": 4, "fields": {"title": "weqwe", "description": "ewqewq", "done": true}}, {"model": "todo.todo", "pk": 5, "fields": {"title": "wqewq", "description": "eqwe", "done": true}}, {"model": "todo.todo", "pk": 6, "fields": {"title": "asda", "description": "wcad", "done": true}}, {"model": "todo.todo", "pk": 7, "fields": {"title": "sda", "description": "dw", "done": true}}, {"model": "todo.todo", "pk": 8, "fields": {"title": "ca", "description": "wd", "done": true}}, {"model": "todo.todo", "pk": 9, "fields": {"title": "cas", "description": "wde", "done": true}}]
+
+            console.log("sads")
+            for (let i = 0; i < data.length; i++) {
+                $('#todo-list').append($("tr"));
+                $('#todo-list').children()[i].append(
+                    `<th scope="row">${i}</th>`
+                )
+            }
+        }
         function deleteTodo(id) {
-            console.log(id)
             $.ajax(
                 {
-                    url: "{% url 'deletetodo' %}",
+                    url: "{% url 'delete-todo' %}",
                     type: 'post',
                     data: { 
                         id: id,
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                     },
                     success: function(response) {
-                        console.log(response);
+                        let rowId = '#todo-' + id + '-row'
+                        $(rowId).remove();
+
                     },
                 }
             )
@@ -83,10 +96,13 @@
 
         $(document).ready(function() {
             $(".btn-danger").click(function() {
-                console.log($(".btn-danger").attr("value"))
                 deleteTodo($(".btn-danger").attr("value"))
+            });
+            $("#insert-todo").click(function() {
+                insertTodo($(".new-todo-input").val())
+
             })
         })
     </script>
 </body>
-</html>
+<ml>
