@@ -27,7 +27,6 @@
                                             <input type="text" class="form-control" id="new-todo-input"/>
                                         </div>
                                         <button type="submit" class="btn btn-primary" id="insert-todo">Save</button>
-                                        <button type="submit" class="btn btn-warning">Get tasks</button>
                                     </div>
                                 </div>
 
@@ -42,8 +41,8 @@
                                 <tbody id="todo-list">
                                     {% for todo in todos %}
                                         <tr id="todo-{{todo.id}}-row">
-                                            <td>{{todo.title}}</td>
-                                            <td>
+                                            <td>{{todo.name}}</td>
+                                            <td id={{todo.id}}-finished>
                                                 {% if todo.done == True %}
                                                 Finished
                                                 {% else %}
@@ -51,8 +50,8 @@
                                                 {% endif %}
                                             </td>
                                             <td>
-                                                <button type="submit" class="btn btn-danger" id="todo-{{todo.id}}" value={{todo.id}}>Delete</button>
-                                                <button type="submit" class="btn btn-success ms-1">Finished</button>
+                                                <button type="submit" class="btn btn-danger" id="todo-{{todo.id}}" value={{todo.id}} onclick="deleteTodo(this.value)">Delete</button>
+                                                <button type="submit" class="btn btn-success ms-1" value={{todo.id}} onclick=finishTodo(this.value)>Finished</button>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -77,17 +76,23 @@
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                     },
                     success: function(response) {
-                        console.log("ballin")
+                        console.log(response)
+                        let id = response
+                        let todoValue = $('#new-todo-input').val();
+                        $('#todo-list').append(
+                            `<tr id='todo-${id}-row'>
+                                <td>${todoValue}</td> 
+                                <td id=${id}-finished>Not finished</td>
+                                <td>
+                                    <button type="submit" class="btn btn-danger" id="todo-${id}" value=${id} onclick=deleteTodo(this.value)>Delete</button>
+                                    <button type="submit" class="btn btn-success ms-1" onclick=finishTodo(${id})>Finished</button>
+                                </td>
+                            </tr>` 
+                        );
                     },
                 }
             )
-            $('#todo-list').append(
-                "<tr>" +
-                    "<td>" + todoValue + "</td>" + 
-                    "<td>Not finished</td>" +
-
-                "</tr>" 
-            );
+           
         }
         function deleteTodo(id) {
             $.ajax(
@@ -99,6 +104,7 @@
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                     },
                     success: function(response) {
+                        console.log("fuck")
                         let rowId = '#todo-' + id + '-row'
                         $(rowId).remove();
                     },
@@ -106,13 +112,29 @@
             )
         }
 
+        function finishTodo(id) {
+            $.ajax(
+                {
+                    url: "{% url 'finish-todo' %}",
+                    type: 'post',
+                    data: { 
+                        id: id,
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                    },
+                    success: function(response) {
+                        let el = `#${id}-finished`
+                        $(el).html(response['changed to'])
+                        console.log(response)
+                    },
+                }
+            )
+        }
         $(document).ready(function() {
             $(".btn-danger").click(function() {
                 deleteTodo($(".btn-danger").attr("value"))
             });
             $("#insert-todo").click(function() {
                 insertTodo($(".new-todo-input").val())
-
             })
         })
     </script>

@@ -11,12 +11,22 @@ def index(request):
 
 def insert(request):
     if request.method == "POST":
-        
+        todo = ToDo.objects.create(name = request.POST['todoValue'], done = False)
+        todo.save()
+        return JsonResponse(todo.id, safe=False)
 
 def delete(request):
     if request.method == "POST":
         todo = ToDo.objects.all().filter(id=request.POST['id'])
         todo.delete()
-        todos = ToDo.objects.all()
+        return JsonResponse("deteted", safe=False)
+        # todos = ToDo.objects.all()
         # serialized_todos = serializers.serialize('json', todos)
         # return JsonResponse(serialized_todos, safe=False)
+
+def finish(request):
+    if request.method == "POST":
+        todo = ToDo.objects.get(id=request.POST['id'])
+        todo.done = not todo.done
+        todo.save()
+        return JsonResponse({"changed to": "Finished" if todo.done else "Not finished"}, safe=False)
