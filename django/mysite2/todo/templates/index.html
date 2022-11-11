@@ -104,7 +104,6 @@
                         csrfmiddlewaretoken: '{{ csrf_token }}',
                     },
                     success: function(response) {
-                        console.log("fuck")
                         let rowId = '#todo-' + id + '-row'
                         $(rowId).remove();
                     },
