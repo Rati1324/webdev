@@ -19,5 +19,4 @@ from Employees import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('Employees.urls')),
 ]
