@@ -2,5 +2,9 @@
 {% block title %} Home {% endblock %}
 
 {% block content %}
-    <h1>Home!</h1>
+    {% if user.is_authenticated %}
+        <h1>Home!</h1>
+    {% else %}
+        <p>You are not logged in </p>
+    {% endif %}
 {% endblock %}
