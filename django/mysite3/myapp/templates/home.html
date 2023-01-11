@@ -3,7 +3,45 @@
 
 {% block content %}
     {% if user.is_authenticated %}
-        <h1>Home!</h1>
+        <div class="container">
+            <div class="row pt-3">
+                <div class="col-md-10">
+                  <h1>Post Feed</h1>
+                </div>
+                <div class="col-md-2">
+                  <a href="/create_post" class="btn btn-secondary">Create post</a>
+                </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Post Title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="#" class="card-link"> Comments</a>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Post Title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <div class="row">
+                      <div class="col-6">
+                          <a href="#" class="card-link"> Comments</a>
+                      </div>
+                    </div>
+                  </div>
+                  
+                </div>
+              </div>
+            </div>
+        </div>
     {% else %}
         <p>You are not logged in </p>
     {% endif %}
