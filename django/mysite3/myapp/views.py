@@ -13,10 +13,12 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             form.save()
-        return redirect("/")
+            return redirect("/")
+        else:
+            return render(request, "register.html", {"form": form})
     else:
         form = RegisterForm()
-    return render(request, "register.html", {"form": form})
+        return render(request, "register.html", {"form": form})
 
 @login_required(login_url="/login/")
 def create_post(request):
