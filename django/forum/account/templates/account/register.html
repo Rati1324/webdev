@@ -1,9 +1,6 @@
 {% extends 'main.html' %}
 {% load static %}
 
-    
-    
-
 {% block content %}
     <link rel="stylesheet" type="text/css" href="{% static 'register/regstyles.css' %}">
     
@@ -18,9 +15,9 @@
                         {{ i }}
                     </div>
                 {% endfor %}
-                    {% for o in form.errors.values %}
-                        <div class="error">{{ o }}</div>
-                    {% endfor %}
+                {% for o in form.errors.values %}
+                    <div class="error">{{ o }}</div>
+                {% endfor %}
                 <input type="submit" value="Submit" class="reg2"></input>
             </form>
                 

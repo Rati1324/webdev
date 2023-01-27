@@ -1,0 +1,68 @@
+{% extends "main.html" %}
+{% load static %}
+
+
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="{% static 'post/post.css' %}">
+    
+    <div class="maincontainer">
+        <div class="post">
+            <div class="title">
+                {{ details.title }}   
+                
+            </div>
+            
+            <div class="details">
+                {{ details.body }}
+            </div>
+            
+            <div class="lower_container">
+                <span class="date">{{ details.date }}</span>
+                <span class="author">By: {{ details.author }}</span>
+                {% if details.edit_date %} 
+                    <span class="edited">Edited: {{details.edit_date.year}}-{{details.edit_date.month}}-{{details.edit_date.month}} {{details.edit_date.hour}}:{{details.edit_date.minute}} </span>
+                {% endif %}
+          
+         
+            </div>
+        </div>
+        {% if comments %}
+            <h3 style="margin-top:35px;">Comments</h3>
+        {% endif %}
+        
+        
+        
+        {% if user.is_authenticated %}
+            <span style="margin:10px 490px 12px 0px">Post a comment:</span>
+            
+            <div class="post_comment">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.body }}
+            </div>
+                    <button type="submit" class="button1">Post</button>
+                </form>
+            
+        
+        {% endif %}
+        
+        {% if comments %}
+            <hr style="width:635px;margin:auto;margin-top:10px;color:rgb(74, 161, 150)">
+        {% endif %}
+        
+        {% for comment in comments %}
+            <div class="comments">
+                <div class="body2">{{ comment.body }}</div> 
+                
+                <div class="date2">{{ comment.date }}
+                    <div class="author2"><span>By: </span>{{ comment.author }}</div>
+                </div>
+                
+                
+            </div>
+            
+        {% endfor %}
+        <div style="height:200px"></div>
+    </div>
+    
+{% endblock %}

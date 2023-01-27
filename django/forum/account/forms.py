@@ -25,8 +25,8 @@ class RegisterForm(UserCreationForm):
     def clean_dob(self):
         dob=self.cleaned_data.get('dob')
             
-        if age(dob)<18:
-            raise forms.ValidationError('You must be 18 or older to join')
+        if age(dob)<13:
+            raise forms.ValidationError('You must be 13 or older to join')
         return dob
         
     class Meta:
