@@ -3,7 +3,7 @@ from .import models
 
 class CreatePost(forms.ModelForm):
     class Meta:
-        model=models.Post
+        model = models.Post
         fields=['title','body']
         widgets = {
           'body': forms.Textarea(attrs={'style':'resize:vertical;max-height:500px;width:405px'}),

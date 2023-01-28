@@ -10,10 +10,10 @@
                 <form class="post" method="POST" class="edit_post">
                     {% csrf_token %}
                     <span>Title: </span>
-                    <input type="text" name="title" value="{{ title }}">
+                    <input type="text" name="title" value="{{ form.title }}">
                     
                     <span>Body: </span>
-                    <textarea resize="none" name="body">{{ body }}</textarea>
+                    <textarea resize="none" name="body">{{ form.body }}</textarea>
                     
                     <button type="submit" class="buttonpost">Post</button>
                 </form>
