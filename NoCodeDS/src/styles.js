@@ -1,6 +1,11 @@
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles({
+    mainContainer: {
+        minHeight: "calc(100vh - 200px)",
+        marginTop: "20px",
+        marginBottom: "20px",
+    },
     container: {
         padding: "40px 10px 40px",
         backgroundColor: "#243782b0", 
@@ -44,11 +49,6 @@ const useStyles = makeStyles({
         boxShadow: "0px -2px 10px 0px grey",
         width: '100%',
     },
-    mainContainer: {
-        minHeight: "calc(100vh - 200px)",
-        marginTop: "20px",
-        marginBottom: "20px",
-    }
 });
 
 export default useStyles;
