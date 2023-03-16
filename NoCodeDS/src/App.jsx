@@ -1,5 +1,5 @@
 import React from 'react'; 
-import { Button, Typography, AppBar, Card, CardActions, CardContent, CardMedia, CssBaseline, Grid, Toolbar, Container } from '@mui/material';
+import { Button, Typography, AppBar, Card, CardActions, CardContent, CardMedia, CssBaseline, Grid, Toolbar, Container, Stack } from '@mui/material';
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import useStyles from './styles';
 import Navbar from './components/Navbar';
@@ -20,36 +20,27 @@ const App = () => {
                             Welcome to your data-driven solution. 
                         </Typography>
                         <div className={classes.buttons}>
-                            <Grid container spacing={2} display="flex" justifyContent="center" alignItems="center">
-                                <Grid item>
-                                    <Button variant="contained" color="primary">
-                                        Get Started
-                                    </Button>
-                                </Grid>
-                                <Grid item>
-                                    <Button variant="outlined" sx={{color:"white"}}>
-                                        Learn More
-                                    </Button>
-                                </Grid>
-
-                            </Grid>
+                            <Stack direction="row" justifyContent="center" spacing={2}>
+                                <Button variant="contained" color="primary">
+                                    Get Started
+                                </Button>
+                                <Button variant="outlined" sx={{color:"white", borderColor:"#243782b0"}}>
+                                    Learn More
+                                </Button>
+                            </Stack>
                         </div>
                     </Container>
                 </div>
 
-                <div className={classes.container} style={{ marginTop: "20px" }}>
+                <div className={classes.container} style={{ marginTop: "20px" }} >
                     <Container maxWidth="sm" className={classes.tutorial} >
-                        <Grid container spacing={2} display="flex" justifyContent="center" alignItems="center">
-                            <Grid item>
-                                <iframe width="220" height="215" src="https://www.youtube.com/watch?v=RBSUwFGa6Fk">
-                                </iframe> 
-                            </Grid>
-                            <Grid item>
-                                <Typography variant="h5" align="center" color="textPrimary" paragraph>
-                                    tutorial
-                                </Typography>
-                            </Grid>
-                        </Grid>                       
+                        <Stack direction="row" justifyContent="center" spacing={2} >
+                            <iframe width="220" height="215" src="https://www.youtube.com/watch?v=RBSUwFGa6Fk"></iframe>
+                            <Typography variant="h5" align="center" color="textPrimary" paragraph>
+                                this tutorial will help you get started on the basics 
+                                of our platform
+                            </Typography>
+                        </Stack>
                     </Container>
                 </div>
             </div>

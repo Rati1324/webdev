@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles';
 const useStyles = makeStyles({
     container: {
         padding: "40px 10px 40px",
-        backgroundColor: "#2a537b", 
+        backgroundColor: "#243782b0", 
         opacity: "86%",
         width: "60%",
         margin: "auto",
@@ -40,7 +40,7 @@ const useStyles = makeStyles({
     footer: {
         backgroundColor: "#5b748ae8",
         padding: "10px 10px 10px",
-        height: "100px",
+        // height: "100px",
         boxShadow: "0px -2px 10px 0px grey",
         width: '100%',
     },
