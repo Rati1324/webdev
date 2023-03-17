@@ -1,6 +1,15 @@
 import React from 'react'
+import useStyles from "../styles";
+import {
+    Container,
+    Typography,
+    Stack,
+    Button,
+} from "@mui/material";
 
+import Grid from '@mui/material/Grid';
 export const Home = () => {
+  const classes = useStyles();
   return (
     <div className={classes.mainContainer}>
         <div className={classes.container} >
@@ -35,6 +44,7 @@ export const Home = () => {
                 </Stack>
             </Container>
         </div>
+      
     </div> 
   )
 }

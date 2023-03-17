@@ -1,10 +1,11 @@
-import { makeStyles } from '@mui/styles';
+import { makeStyles, StylesProvider } from '@mui/styles';
 
 const useStyles = makeStyles({
     mainContainer: {
         minHeight: "calc(100vh - 200px)",
         marginTop: "20px",
         marginBottom: "20px",
+        // border: "1px solid",
     },
     container: {
         padding: "40px 10px 40px",
@@ -42,13 +43,13 @@ const useStyles = makeStyles({
         display: "flex",
         flexDirection: "column"
     },
-    footer: {
-        backgroundColor: "#5b748ae8",
-        padding: "10px 10px 10px",
-        // height: "100px",
-        boxShadow: "0px -2px 10px 0px grey",
-        width: '100%',
-    },
+    // footer: {
+    //     backgroundColor: "#5b748ae8",
+    //     padding: "10px 10px 10px",
+    //     // height: "100px",
+    //     boxShadow: "0px -2px 10px 0px grey",
+    //     width: '100%',
+    // },
 });
 
 export default useStyles;

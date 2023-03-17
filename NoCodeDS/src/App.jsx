@@ -1,18 +1,27 @@
 import React from 'react'; 
-// import useStyles from './styles';
+
 import { Navbar } from './components/Navbar';
 import { Home } from './components/Home';
 import { Prices } from './components/Prices';
+import { CssBaseline } from '@mui/material';
+import { Footer } from './components/Footer';
+
+import {
+  Routes,
+  Route,
+} from "react-router-dom";
+import { NavLayout } from './components/NavLayout';
 
 const App = () => {
-    // const classes = useStyles();
     return (
         <>
             <CssBaseline />
             <Navbar />
-            <Prices />
-            
-            
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/pricing" element={<Prices />} />
+            </Routes>
+            <Footer />
         </>
     )
 }
