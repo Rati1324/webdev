@@ -25,7 +25,7 @@ export const Home = () => {
                         <Button variant="contained" color="primary">
                             Get Started
                         </Button>
-                        <Button variant="outlined" sx={{color:"white", borderColor:"#243782b0"}}>
+                        <Button variant="outlined" sx={{color:"white", borderColor:"#6777bf"}}>
                             Learn More
                         </Button>
                     </Stack>
@@ -37,7 +37,7 @@ export const Home = () => {
             <Container maxWidth="sm" className={classes.tutorial} >
                 <Stack direction="row" justifyContent="center" spacing={2} >
                     <iframe width="220" height="215" src="https://www.youtube.com/watch?v=RBSUwFGa6Fk"></iframe>
-                    <Typography variant="h5" align="center" color="textPrimary" paragraph>
+                    <Typography variant="h5" align="center" sx={{color:"white"}} paragraph>
                         this tutorial will help you get started on the basics 
                         of our platform
                     </Typography>

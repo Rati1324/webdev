@@ -9,9 +9,10 @@ const useStyles = makeStyles({
     },
     container: {
         padding: "40px 10px 40px",
-        backgroundColor: "#243782b0", 
+        // backgroundColor: "#243782b0", 
+        backgroundColor: "#243782b0",
         opacity: "86%",
-        width: "60%",
+        width: "55%",
         margin: "auto",
         borderRadius: "20px"
     },

@@ -24,7 +24,7 @@ import StarIcon from '@mui/icons-material/StarBorder';
 import GlobalStyles from '@mui/material/GlobalStyles';
 
 import { Home } from './Home';
-import { Prices } from './Prices';
+import { Pricing } from './Pricing';
 
 import {
   Link as RouterLink,
@@ -67,8 +67,13 @@ export const Navbar = () => {
             Company name
           </Typography>
 
-          <AdbIcon sx={{ display: { xs: 'flex'}}} />
-
+          <AdbIcon sx={{ 
+            display: { xs: 'flex'}, 
+            color:"white", 
+            marginLeft: "80px",
+            display:{xs:"none", sm:"block"}
+          }} />
+  
           <nav>
               <Link component={RouterLink} to="/" sx={{ my: 1, mx: 1.5, color: "white", textTransform: "none" }}>
                 Home

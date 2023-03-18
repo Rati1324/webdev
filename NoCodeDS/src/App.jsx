@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Navbar } from './components/Navbar';
 import { Home } from './components/Home';
-import { Prices } from './components/Prices';
+import { Pricing } from './components/Pricing';
 import { CssBaseline } from '@mui/material';
 import { Footer } from './components/Footer';
 
@@ -19,7 +19,7 @@ const App = () => {
             <Navbar />
             <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/pricing" element={<Prices />} />
+                <Route path="/pricing" element={<Pricing />} />
             </Routes>
             <Footer />
         </>
