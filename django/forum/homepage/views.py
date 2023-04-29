@@ -11,11 +11,7 @@ def search(request):
 
     results_in_title = set(Post.objects.all().filter(title__contains = keyword))
     results_in_body = set(Post.objects.all().filter(body__contains = keyword))
-
     results = results_in_body.symmetric_difference(results_in_title)
     
-    return render(request,'homepage/homepage.html',{'posts':results,'title':title,'search':True})
+    return render(request,'homepage/homepage.html',{'posts':results,'title':keyword,'search':True})
     
-    
-    
-
