@@ -20,46 +20,42 @@
                 <input type="date" id="endDate" class="form-control">
             </div>
             <div class="col" style="display: flex; align-items: end;">
-                <button type="submit" class="btn btn-primary" onclick="filter()">Filter</button>
+                <button type="submit" class="btn btn-primary" onclick="filterByDate()">Filter</button>
             </div>
         </div>
 
         <h1>Users</h1>
         <table class="table table-striped table-bordered" id="dataTable">
-            <thead>
-                <tr>
-                    <th>Create date</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                </tr>
+            <thead id="columns">
+               
             </thead>
-            
+            <tbody id="rows">
+
+            </tbody>
         </table>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        const xml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>2023-04-28T00:00:00</begin_date_s><begin_date_e>2023-04-28T23:59:59</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>';
+        const xmlData = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>2023-04-28T00:00:00</begin_date_s><begin_date_e>2023-04-28T23:59:59</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>';
         
 
-        function findSubIndex(str, substr) {
-            return str.indexOf(substr) + substr.length;
+        function replaceDates(xmlString, newDate1, newDate2) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+
+            const dateBegineElem = xmlDoc.getElementsByTagName("begin_date_e")[0];
+            const dateBeginsElem = xmlDoc.getElementsByTagName("begin_date_s")[0];
+
+            dateBegineElem.textContent = newDate1;
+            dateBeginsElem.textContent = newDate2;
+
+            return new XMLSerializer().serializeToString(xmlDoc);
         }
 
-        function setDateFilter(str, newDateStart, newDateEnd) {
-            let beginDateIndexStart = findSubIndex(str, "begin_date_s>")
-            let beginDateIndexEnd = findSubIndex(str, "</begin_date_s>");
-            let endDateIndexStart = findSubIndex(str, "begin_date_e>");
-            let endDateIndexEnd = findSubIndex(str, "</begin_date_e>");
-            
-            let string1 = str.substring(0, beginDateIndexStart) + newDateStart 
-            let string2 = str.substring(beginDateIndexEnd, endDateIndexStart) + newDateEnd + str.substring(endDateIndexEnd, str.length);
-            return string1 + string2;
-        }
-
-        console.log(setDateFilter(xml, "date begin", "date end"))
-        async function fetch_data() {
+        console.log()
+        async function fetchData(xml) {
             const response = await fetch("/fetch_data", {
             method: "POST",
             headers: {
@@ -73,48 +69,41 @@
         }
 
         const table = document.querySelector("#dataTable");
-        fetch_data().then((data) => {
-            // console.log(data)
-            const headerRow = table.insertRow();
-            for (let key in data[0]) {
-                const headerCell = headerRow.insertCell();
-                headerCell.textContent = key;
-            }
+        const rows = document.querySelector("#rows");
 
-            // Create a row for each object in the data array
+        function fillTable(data) {
+  
             for (let obj of data) {
-                const row = table.insertRow();
+                const tbodyRow = rows.insertRow();
                 for (let key in obj) {
-                    const cell = row.insertCell();
+                    const cell = tbodyRow.insertCell();
                     cell.textContent = obj[key];
                 }
             }
-            data.forEach(obj => {
-                const row = document.createElement('tr');
-                let items = [obj["CREATE_DATE"]];
-                items.forEach(item => {
-                    const cell = document.createElement('td');
-                    cell.textContent = item;
-                    row.appendChild(cell);
-                })
-                // let index = 0;
-                // for (key in obj) {
-                //     if (index > 2) {
-                //         break;
-                //     };
-                //     const cell = document.createElement('td');
-                //     cell.textContent = obj[key];
-                //     row.appendChild(cell);
-                //     index++;
-                // }
-                // table.appendChild(row);
-                // Object.values(obj).forEach(value => {
-                //     const cell = document.createElement('td');
-                //     cell.textContent = value;
-                //     row.appendChild(cell);
-                // });
-                table.appendChild(row);
-            })
+        }
+
+        function filterByDate() {
+            let rows = document.querySelector("#rows").innerHTML = "";
+
+            let startDate = document.querySelector("#startDate");
+            let endDate = document.querySelector("#endDate");
+            let filteredXML = replaceDates(xmlData, startDate.value, endDate.value);
+            fetchData(filteredXML).then((data) => {
+                fillTable(data);
+            });
+        }
+
+        const thead = document.querySelector("#columns");
+        fetchData(xmlData).then((data) => {
+            const theadRow = thead.insertRow();
+            for (let key in data[0]) {
+                let th = document.createElement("th");
+                th.textContent = key;
+                theadRow.appendChild(th)
+                // const headerCell = theadRow.insertCell();
+                // headerCell.textContent = key;
+            }
+            fillTable(data);
         });
 
     </script>
