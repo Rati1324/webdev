@@ -8,10 +8,24 @@
     <title>Document</title>
 </head>
 <body>
-    <div>hi</div>
     <div class="container">
+        <h1>Date Range Selector</h1>
+        <div class="row">
+            <div class="col">
+                <label for="startDate">From:</label>
+                <input type="date" id="startDate" class="form-control">
+            </div>
+            <div class="col">
+                <label for="endDate">To:</label>
+                <input type="date" id="endDate" class="form-control">
+            </div>
+            <div class="col" style="display: flex; align-items: end;">
+                <button type="submit" class="btn btn-primary" onclick="filter()">Filter</button>
+            </div>
+        </div>
+
         <h1>Users</h1>
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered" id="dataTable">
             <thead>
                 <tr>
                     <th>Create date</th>
@@ -19,15 +33,7 @@
                     <th>Email</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for item in data %}
-                    <tr>
-                        <td>{{ item.CREATE_DATE }}</td>
-                        <td>{{ item.BUYER_TIN }}</td>
-                        <td>{{ item.CHEK_BUYER_TIN }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
+            
         </table>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -36,7 +42,23 @@
     <script>
         const xml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>2023-04-28T00:00:00</begin_date_s><begin_date_e>2023-04-28T23:59:59</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>';
         
-        const data = "this is data";
+
+        function findSubIndex(str, substr) {
+            return str.indexOf(substr) + substr.length;
+        }
+
+        function setDateFilter(str, newDateStart, newDateEnd) {
+            let beginDateIndexStart = findSubIndex(str, "begin_date_s>")
+            let beginDateIndexEnd = findSubIndex(str, "</begin_date_s>");
+            let endDateIndexStart = findSubIndex(str, "begin_date_e>");
+            let endDateIndexEnd = findSubIndex(str, "</begin_date_e>");
+            
+            let string1 = str.substring(0, beginDateIndexStart) + newDateStart 
+            let string2 = str.substring(beginDateIndexEnd, endDateIndexStart) + newDateEnd + str.substring(endDateIndexEnd, str.length);
+            return string1 + string2;
+        }
+
+        console.log(setDateFilter(xml, "date begin", "date end"))
         async function fetch_data() {
             const response = await fetch("/fetch_data", {
             method: "POST",
@@ -44,11 +66,57 @@
                 "Content-Type": "text/xml",
             },
             body: xml,
-        });
-        const jsonData = await response.json();
-        console.log(jsonData);
+            });
+            const data = await response.json();
+            console.log(data.length)
+            return data;
         }
-        fetch_data();
+
+        const table = document.querySelector("#dataTable");
+        fetch_data().then((data) => {
+            // console.log(data)
+            const headerRow = table.insertRow();
+            for (let key in data[0]) {
+                const headerCell = headerRow.insertCell();
+                headerCell.textContent = key;
+            }
+
+            // Create a row for each object in the data array
+            for (let obj of data) {
+                const row = table.insertRow();
+                for (let key in obj) {
+                    const cell = row.insertCell();
+                    cell.textContent = obj[key];
+                }
+            }
+            data.forEach(obj => {
+                const row = document.createElement('tr');
+                let items = [obj["CREATE_DATE"]];
+                items.forEach(item => {
+                    const cell = document.createElement('td');
+                    cell.textContent = item;
+                    row.appendChild(cell);
+                })
+                // let index = 0;
+                // for (key in obj) {
+                //     if (index > 2) {
+                //         break;
+                //     };
+                //     const cell = document.createElement('td');
+                //     cell.textContent = obj[key];
+                //     row.appendChild(cell);
+                //     index++;
+                // }
+                // table.appendChild(row);
+                // Object.values(obj).forEach(value => {
+                //     const cell = document.createElement('td');
+                //     cell.textContent = value;
+                //     row.appendChild(cell);
+                // });
+                table.appendChild(row);
+            })
+        });
+
     </script>
 </body>
 </html>
