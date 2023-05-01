@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Date Range Selector</h1>
+        <h4>Date Range Selector</h4>
         <div class="row">
             <div class="col">
                 <label for="startDate">From:</label>
@@ -23,8 +23,7 @@
                 <button type="submit" class="btn btn-primary" onclick="filterByDate()">Filter</button>
             </div>
         </div>
-
-        <h1>Users</h1>
+        <br>
         <table class="table table-striped table-bordered" id="dataTable">
             <thead id="columns">
                
@@ -72,7 +71,6 @@
         const rows = document.querySelector("#rows");
 
         function fillTable(data) {
-  
             for (let obj of data) {
                 const tbodyRow = rows.insertRow();
                 for (let key in obj) {
