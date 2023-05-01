@@ -15,8 +15,7 @@ async def fetch_data(xml: str = Body()):
     }
     response = requests.post("https://services.rs.ge/WayBillService/WayBillService.asmx", data=xml, headers=headers).text
     xml_dict = xmltodict.parse(response)
-    data = xml_dict["soap:Envelope"]["soap:Body"]["get_buyer_waybillsResponse"]["get_buyer_waybillsResult"]["WAYBILL_LIST"]["WAYBILL"]
-    return data
+    return xml_dict
 
 @app.get("/")
 def read_root(request: Request):
