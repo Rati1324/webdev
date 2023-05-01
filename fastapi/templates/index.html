@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="{{ url_for('static', path='/css/styles.css') }}" rel="stylesheet">
     <title>Document</title>
 </head>
 <body>
@@ -47,6 +48,8 @@
         const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
         const fields = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
 
+        const parser = new DOMParser();
+
         function replaceDates(xmlString, newDate1, newDate2) {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlString, "application/xml");
@@ -80,8 +83,6 @@
             const filteredData = data.map(item => {
                 let newItem = {};
                 keys.forEach((field) => {
-                    console.log(item)
-                    // console.log(newItem[field], item[field])
                     newItem[field] = item[field];
                 })
                 return newItem;
@@ -101,25 +102,34 @@
             }
         }
 
+        // doesnt work
         function filterByDate() {
+            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
             let startDate = document.querySelector("#startDate");
             let endDate = document.querySelector("#endDate");
             let filteredXML = replaceDates(xmlData, startDate.value, endDate.value);
+            console.log(filteredXML)
             fetchData(filteredXML).then((data) => {
                 fillTable(data);
             });
         }
         
-        const thead = document.querySelector("#columns");
-        fetchData(xmlData).then((data) => {
-            const theadRow = thead.insertRow();
-            fields.forEach((field) => {
-                let th = document.createElement("th");
-                th.textContent = field;
-                theadRow.appendChild(th)
-                // const headerCell = theadRow.insertCell();
-                // headerCell.textContent = key;
-            })
+        function getWaybill() {
+            let xml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><get_waybill xmlns="http://tempuri.org/"><su>mega:405453959</su><sp>12345654321</sp><waybill_id>772755411</waybill_id></get_waybill></soap:Body></soap:Envelope>'
+            const waybillId = xmlDoc.getElementsByTagName("waybill_id")[0];
+            return new XMLSerializer().serializeToString(xmlDoc);
+        }
+
+            const thead = document.querySelector("#columns");
+            fetchData(xmlData).then((data) => {
+                const theadRow = thead.insertRow();
+                fields.forEach((field) => {
+                    let th = document.createElement("th");
+                    th.textContent = field;
+                    theadRow.appendChild(th)
+                    // const headerCell = theadRow.insertCell();
+                    // headerCell.textContent = key;
+                })
             fillTable(data);
         })
     </script>
