@@ -38,18 +38,14 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- <script src="{{ url_for('static', path='scripts.js') }}"></script> -->
-    <script src="{{ url_for('static', path='scripts.js') }}"></script>
     
     <script>
         const xmlData = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>2023-04-28T00:00:00</begin_date_s><begin_date_e>2023-04-28T23:59:59</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>';
 
-        // let wayBillTypes;
-        // getWaybillTypes()
-        //     .then((data) => {
-        //         waBillTypes = data;
-        //         console.log(data)
-        //     })
+        const types = ["შიდა გადაზიდვა", "ტრანსპორტირებით", "ტრანსპორტირების გარეშე", "დისტრიბუცია", "უკან დაბრუნება", "ქვე-ზედნადები"];
+        const statuses = ["შენახული", "აქტივირებული", "დასრულებული"]
+        const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
+        const fields = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
 
         function replaceDates(xmlString, newDate1, newDate2) {
             const parser = new DOMParser();
@@ -80,18 +76,23 @@
         const table = document.querySelector("#dataTable");
         const rows = document.querySelector("#rows");
 
-        function fillTable(data, types) {
-            console.log(data, types)
-            const filteredTypes = types.filter(type => {
-                type.ID
+        function fillTable(data) {
+            const filteredData = data.map(item => {
+                let newItem = {};
+                keys.forEach((field) => {
+                    console.log(item)
+                    // console.log(newItem[field], item[field])
+                    newItem[field] = item[field];
+                })
+                return newItem;
             })
             document.querySelector("#rows").innerHTML = "";
-            for (let obj of data) {
+            for (let obj of filteredData) {
                 const tbodyRow = rows.insertRow();
-                obj["TYPE"] = types.filter(type => {
-                    return type.ID === obj["TYPE"]
-                })[0].NAME
- 
+                // console.log(obj["TYPE"])
+                obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
+                obj["STATUS"] = statuses[parseInt(obj["STATUS"]-1)]
+
                 for (let key in obj) {
                     content = obj[key];
                     const cell = tbodyRow.insertCell();
@@ -109,12 +110,9 @@
             });
         }
         
-        const fields = ["ზედნადები", "ტიპი"];
         const thead = document.querySelector("#columns");
-        // console.log(wayBillTypes)
         fetchData(xmlData).then((data) => {
             const theadRow = thead.insertRow();
-            console.log(data)
             fields.forEach((field) => {
                 let th = document.createElement("th");
                 th.textContent = field;
@@ -122,9 +120,7 @@
                 // const headerCell = theadRow.insertCell();
                 // headerCell.textContent = key;
             })
-            getWaybillTypes().then((types) => {
-                fillTable(data, types)
-            }
-        )})
+            fillTable(data);
+        })
     </script>
 </html>
