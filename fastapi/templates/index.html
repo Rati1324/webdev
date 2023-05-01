@@ -94,6 +94,7 @@
         const thead = document.querySelector("#columns");
         fetchData(xmlData).then((data) => {
             const theadRow = thead.insertRow();
+            console.log(data)
             for (let key in data[0]) {
                 let th = document.createElement("th");
                 th.textContent = key;
