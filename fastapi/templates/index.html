@@ -37,13 +37,10 @@
         </div>
         
         <div class="row">
-            <table class="table table-bordered" id="dataTable2">
+            <table class="table table-bordered" id="dataTable2" style="height:300px">
                 <thead id="columns2">
-                    <tr>
-                    </tr>
                 </thead>
                 <tbody id="rows2">
-
                 </tbody>
             </table>
         </div>
@@ -105,8 +102,19 @@
             return new XMLSerializer().serializeToString(xmlDoc);
         }
 
-        function fillProductsTable() {
-            
+        function fillProductsTable(data) {
+            const rows2 = document.querySelector("#rows2");
+            rows2.innerHTML = "";
+            for (let index in data) {
+                let tbodyRow2 = rows2.insertRow();
+                for (let key in data[index]) {
+                    let obj = data[index];
+                    let content = obj[key];
+                    console.log(tbodyRow2)
+                    let cell2 = tbodyRow2.insertCell();
+                    cell2.textContent = content;
+                }
+            }
         }
 
         function prepareWaybillData(data) {
@@ -124,7 +132,6 @@
             return filteredData;
         }
 
-        const rows = document.querySelector("#rows");
         const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
 
         function fillTable(data, fields, table) {
@@ -136,7 +143,8 @@
                 return newItem;
             })
 
-            document.querySelector("#rows").innerHTML = "";
+            const rows = document.querySelector("#rows");
+            rows.innerHTML = "";
             for (let obj of filteredData) {
                 const tbodyRow = rows.insertRow();
                 obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
@@ -146,8 +154,7 @@
                     let xml = prepareGetwaybillXML(obj["ID"]);
                     fetchData(xml).then(data => {
                         let filteredData = prepareWaybillData(data);
-                        console.log(filteredData)
-                        // fillProductsTable()
+                        fillProductsTable(filteredData);
                     })
                 })
                 tbodyRow.addEventListener("mouseover", () => {
@@ -157,13 +164,12 @@
                 tbodyRow.addEventListener("mouseleave", () => tbodyRow.style.backgroundColor = "white")
 
                 for (let key in obj) {
-                    content = obj[key];
+                    let content = obj[key];
                     const cell = tbodyRow.insertCell();
                     cell.textContent = content;
                 }
             }
         }
-
 
         fetchData(getWaybillsXML).then((data) => {
             let thead = document.querySelector("#columns");
