@@ -106,11 +106,12 @@
             const rows2 = document.querySelector("#rows2");
             rows2.innerHTML = "";
             for (let index in data) {
+                var obj = data[index];
                 let tbodyRow2 = rows2.insertRow();
-                for (let key in data[index]) {
-                    let obj = data[index];
+                let unit = units[parseInt(obj["UNIT_ID"])-1];
+                obj["UNIT_ID"] = unit;
+                for (let key in obj) {
                     let content = obj[key];
-                    console.log(tbodyRow2)
                     let cell2 = tbodyRow2.insertCell();
                     cell2.textContent = content;
                 }
@@ -135,6 +136,8 @@
         const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
 
         function fillTable(data, fields, table) {
+            let lastClicked = 0;
+
             let filteredData = data.map(item => {
                 let newItem = {};
                 keys.forEach((key) => {
@@ -151,6 +154,11 @@
                 obj["STATUS"] = statuses[parseInt(obj["STATUS"]-1)]
 
                 tbodyRow.addEventListener("click", () => {
+                    if (lastClicked) {
+                        lastClicked.style.backgroundColor = "white"
+                    }
+                    lastClicked = tbodyRow;
+                    tbodyRow.style.backgroundColor = "#404240";
                     let xml = prepareGetwaybillXML(obj["ID"]);
                     fetchData(xml).then(data => {
                         let filteredData = prepareWaybillData(data);
@@ -161,7 +169,11 @@
                     tbodyRow.style.backgroundColor = "#404240";
                     tbodyRow.style.cursor = "pointer";
                 })
-                tbodyRow.addEventListener("mouseleave", () => tbodyRow.style.backgroundColor = "white")
+                tbodyRow.addEventListener("mouseleave", () => {
+                    if (tbodyRow !== lastClicked) {
+                        tbodyRow.style.backgroundColor = "white"
+                    }
+                })
 
                 for (let key in obj) {
                     let content = obj[key];
