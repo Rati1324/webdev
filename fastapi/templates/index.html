@@ -25,7 +25,7 @@
             </div>
         </div>
         <br>
-        <table class="table table-striped table-bordered" id="dataTable">
+        <table class="table table-bordered" id="dataTable">
             <thead id="columns">
                
             </thead>
@@ -41,17 +41,27 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
     <script>
-        const xmlData = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>2023-04-28T00:00:00</begin_date_s><begin_date_e>2023-04-28T23:59:59</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>';
+        const getWaybillsXML = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>2023-04-28T00:00:00</begin_date_s><begin_date_e>2023-04-28T23:59:59</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>';
+        const getWaybillXML = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><get_waybill xmlns="http://tempuri.org/"><su>mega:405453959</su><sp>12345654321</sp><waybill_id>int</waybill_id></get_waybill></soap:Body></soap:Envelope>';
 
         const types = ["შიდა გადაზიდვა", "ტრანსპორტირებით", "ტრანსპორტირების გარეშე", "დისტრიბუცია", "უკან დაბრუნება", "ქვე-ზედნადები"];
         const statuses = ["შენახული", "აქტივირებული", "დასრულებული"]
-        const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
-        const fields = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
 
         const parser = new DOMParser();
 
+        async function fetchData(xml) {
+            const response = await fetch("/fetch_data", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "text/xml",
+                },
+                body: xml,
+            });
+            const data = await response.json();
+            return data;
+        }
+
         function replaceDates(xmlString, newDate1, newDate2) {
-            const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlString, "application/xml");
 
             const dateBegineElem = xmlDoc.getElementsByTagName("begin_date_e")[0];
@@ -63,36 +73,56 @@
             return new XMLSerializer().serializeToString(xmlDoc);
         }
 
-        async function fetchData(xml) {
-            const response = await fetch("/fetch_data", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "text/xml",
-                },
-                body: xml,
+        // doesnt work
+        function filterByDate() {
+            // const xmlDoc = parser.parseFromString(getWaybillsXML, "application/xml");
+            let startDate = document.querySelector("#startDate");
+            let endDate = document.querySelector("#endDate");
+            let filteredXML = replaceDates(getWaybillsXML, startDate.value, endDate.value);
+            fetchData(filteredXML).then((data) => {
+                fillTable(data);
             });
-            const data = await response.json();
-            let preparedData = data["soap:Envelope"]["soap:Body"]["get_buyer_waybillsResponse"]["get_buyer_waybillsResult"]["WAYBILL_LIST"]["WAYBILL"];
-            return preparedData;
+        }
+
+        function prepareGetwaybillXML(waybillID) {
+            const xmlDoc = parser.parseFromString(getWaybillXML, "application/xml");
+            const waybillIDElem = xmlDoc.getElementsByTagName("waybill_id")[0];
+            waybillIDElem.textContent = waybillID;
+            return new XMLSerializer().serializeToString(xmlDoc);
         }
 
         const table = document.querySelector("#dataTable");
         const rows = document.querySelector("#rows");
-
-        function fillTable(data) {
-            const filteredData = data.map(item => {
+        const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
+        function fillTable(data, fields) {
+            let filteredData = data.map(item => {
                 let newItem = {};
-                keys.forEach((field) => {
-                    newItem[field] = item[field];
+                keys.forEach((key) => {
+                    newItem[key] = item[key];
                 })
                 return newItem;
             })
+
             document.querySelector("#rows").innerHTML = "";
             for (let obj of filteredData) {
                 const tbodyRow = rows.insertRow();
                 // console.log(obj["TYPE"])
                 obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
                 obj["STATUS"] = statuses[parseInt(obj["STATUS"]-1)]
+
+                tbodyRow.addEventListener("click", () => {
+                    let xml = prepareGetwaybillXML(obj["ID"]);
+                    fetchData(xml).then(data => {
+                        console.log(data)
+                        let filteredData = data["soap:Envelope", "soap:Body", "get_waybillResponse", "get_waybillResult", "RESULT"];
+                        
+                    })
+                })
+                tbodyRow.addEventListener("mouseover", () => {
+                    tbodyRow.style.backgroundColor = "#404240";
+                    tbodyRow.style.cursor = "pointer";
+                })
+                tbodyRow.addEventListener("mouseleave", () => tbodyRow.style.backgroundColor = "white")
 
                 for (let key in obj) {
                     content = obj[key];
@@ -102,35 +132,22 @@
             }
         }
 
-        // doesnt work
-        function filterByDate() {
-            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-            let startDate = document.querySelector("#startDate");
-            let endDate = document.querySelector("#endDate");
-            let filteredXML = replaceDates(xmlData, startDate.value, endDate.value);
-            console.log(filteredXML)
-            fetchData(filteredXML).then((data) => {
-                fillTable(data);
-            });
-        }
-        
-        function getWaybill() {
-            let xml = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><get_waybill xmlns="http://tempuri.org/"><su>mega:405453959</su><sp>12345654321</sp><waybill_id>772755411</waybill_id></get_waybill></soap:Body></soap:Envelope>'
-            const waybillId = xmlDoc.getElementsByTagName("waybill_id")[0];
-            return new XMLSerializer().serializeToString(xmlDoc);
-        }
+        const thead = document.querySelector("#columns");
+        const fields1 = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
+        const fields2 = ["RS დასახელება", "დასახელება", "ერთეული", "რაოდენობა", "RS ფასი", "ფასი", "ჯამი", "RS კოდი"];
 
-            const thead = document.querySelector("#columns");
-            fetchData(xmlData).then((data) => {
-                const theadRow = thead.insertRow();
-                fields.forEach((field) => {
-                    let th = document.createElement("th");
-                    th.textContent = field;
-                    theadRow.appendChild(th)
-                    // const headerCell = theadRow.insertCell();
-                    // headerCell.textContent = key;
-                })
-            fillTable(data);
+        fetchData(getWaybillsXML).then((data) => {
+            let preparedData = data["soap:Envelope"]["soap:Body"]["get_buyer_waybillsResponse"]["get_buyer_waybillsResult"]["WAYBILL_LIST"]["WAYBILL"];
+            const theadRow = thead.insertRow();
+            fields.forEach((field) => {
+                let th = document.createElement("th");
+                th.textContent = field;
+                theadRow.appendChild(th)
+                // const headerCell = theadRow.insertCell();
+                // headerCell.textContent = key;
+            })
+            fillTable(preparedData);
         })
+
     </script>
 </html>
