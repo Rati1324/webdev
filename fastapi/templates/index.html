@@ -24,15 +24,29 @@
                 <button type="submit" class="btn btn-primary" onclick="filterByDate()">Filter</button>
             </div>
         </div>
-        <br>
-        <table class="table table-bordered" id="dataTable">
-            <thead id="columns">
-               
-            </thead>
-            <tbody id="rows">
 
-            </tbody>
-        </table>
+        <div class="row">
+            <table class="table table-bordered" id="dataTable1">
+                <thead id="columns">
+                
+                </thead>
+                <tbody id="rows">
+
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="row">
+            <table class="table table-bordered" id="dataTable2">
+                <thead id="columns2">
+                    <tr>
+                    </tr>
+                </thead>
+                <tbody id="rows2">
+
+                </tbody>
+            </table>
+        </div>
     </div>
  
 </body>
@@ -46,7 +60,7 @@
 
         const types = ["შიდა გადაზიდვა", "ტრანსპორტირებით", "ტრანსპორტირების გარეშე", "დისტრიბუცია", "უკან დაბრუნება", "ქვე-ზედნადები"];
         const statuses = ["შენახული", "აქტივირებული", "დასრულებული"]
-
+        const units = ["ცალი", "გრამი", "ლიტრი", "ტონა", "სანტიმეტრი", "მეტრი", "კილომეტრი", "კვ.სმ", "კვ.მ", "კუბ.მ", "მილიმეტრი", "კგ", "სხვა", "შეკვრა"]
         const parser = new DOMParser();
 
         async function fetchData(xml) {
@@ -91,10 +105,29 @@
             return new XMLSerializer().serializeToString(xmlDoc);
         }
 
-        const table = document.querySelector("#dataTable");
+        function fillProductsTable() {
+            
+        }
+
+        function prepareWaybillData(data) {
+            let keys = ["W_NAME", "UNIT_ID", "QUANTITY", "AMOUNT", "PRICE", "TOTAL_PRICE", "BAR_CODE"]
+            let goodsData = data["soap:Envelope"]["soap:Body"]["get_waybillResponse"]["get_waybillResult"]["WAYBILL"]["GOODS_LIST"]["GOODS"];
+            // console.log(filteredData)
+            let filteredData = goodsData.map(item => {
+                let newItem = {};
+                keys.forEach((key) => {
+                    newItem[key] = item[key];
+                })
+                newItem["TOTAL_PRICE"] = item["QUANTITY"] * item["PRICE"];
+                return newItem;
+            })
+            return filteredData;
+        }
+
         const rows = document.querySelector("#rows");
         const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
-        function fillTable(data, fields) {
+
+        function fillTable(data, fields, table) {
             let filteredData = data.map(item => {
                 let newItem = {};
                 keys.forEach((key) => {
@@ -106,16 +139,15 @@
             document.querySelector("#rows").innerHTML = "";
             for (let obj of filteredData) {
                 const tbodyRow = rows.insertRow();
-                // console.log(obj["TYPE"])
                 obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
                 obj["STATUS"] = statuses[parseInt(obj["STATUS"]-1)]
 
                 tbodyRow.addEventListener("click", () => {
                     let xml = prepareGetwaybillXML(obj["ID"]);
                     fetchData(xml).then(data => {
-                        console.log(data)
-                        let filteredData = data["soap:Envelope", "soap:Body", "get_waybillResponse", "get_waybillResult", "RESULT"];
-                        
+                        let filteredData = prepareWaybillData(data);
+                        console.log(filteredData)
+                        // fillProductsTable()
                     })
                 })
                 tbodyRow.addEventListener("mouseover", () => {
@@ -132,21 +164,29 @@
             }
         }
 
-        const thead = document.querySelector("#columns");
-        const fields1 = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
-        const fields2 = ["RS დასახელება", "დასახელება", "ერთეული", "რაოდენობა", "RS ფასი", "ფასი", "ჯამი", "RS კოდი"];
 
         fetchData(getWaybillsXML).then((data) => {
+            let thead = document.querySelector("#columns");
+            let fields1 = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
             let preparedData = data["soap:Envelope"]["soap:Body"]["get_buyer_waybillsResponse"]["get_buyer_waybillsResult"]["WAYBILL_LIST"]["WAYBILL"];
-            const theadRow = thead.insertRow();
-            fields.forEach((field) => {
+            let theadRow = thead.insertRow();
+            
+            let thead2 = document.querySelector("#columns2");
+            let fields2 = ["RS დასახელება", "ერთეული", "რაოდენობა", "RS ფასი", "ფასი", "ჯამი", "RS კოდი"];
+            let theadRow2 = thead2.insertRow();
+
+            fields2.forEach((field) => {
+                let th = document.createElement("th");
+                th.textContent = field;
+                theadRow2.appendChild(th)
+            })  
+
+            fields1.forEach((field) => {
                 let th = document.createElement("th");
                 th.textContent = field;
                 theadRow.appendChild(th)
-                // const headerCell = theadRow.insertCell();
-                // headerCell.textContent = key;
             })
-            fillTable(preparedData);
+            fillTable(preparedData, fields1, document.querySelector("#dataTable1"));
         })
 
     </script>
