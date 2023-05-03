@@ -128,7 +128,7 @@
                 keys.forEach((key) => {
                     newItem[key] = item[key];
                 })
-                newItem["TOTAL_PRICE"] = item["QUANTITY"] * item["AMOUNT"];
+                newItem["TOTAL_PRICE"] = Math.round(item["QUANTITY"] * item["AMOUNT"] * 0) / 20;
                 return newItem;
             })
             return filteredData;
