@@ -57,7 +57,7 @@
 
         const types = ["შიდა გადაზიდვა", "ტრანსპორტირებით", "ტრანსპორტირების გარეშე", "დისტრიბუცია", "უკან დაბრუნება", "ქვე-ზედნადები"];
         const statuses = ["შენახული", "აქტივირებული", "დასრულებული"]
-        const units = ["ცალი", "გრამი", "ლიტრი", "ტონა", "სანტიმეტრი", "მეტრი", "კილომეტრი", "კვ.სმ", "კვ.მ", "კუბ.მ", "მილიმეტრი", "კგ", "სხვა", "შეკვრა"]
+        const units = {"1":"ცალი", "2":"კგ", "3":"გრამი", "4":"ლიტრი", "5":"ტონა", "7":"სანტიმეტრი", "8":"მეტრი", "9":"კილომეტრი", "10":"კვ.სმ", "11":"კვ.მ", "12":"კუბ.მ", "13":"მილიმეტრი",  "99":"სხვა", "14":"შეკვრა"}
         const parser = new DOMParser();
         const fields1 = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
 
@@ -110,8 +110,7 @@
             rows2.innerHTML = "";
             for (let obj of data) {
                 let tbodyRow2 = rows2.insertRow();
-                let unit = units[parseInt(obj["UNIT_ID"])-1];
-                obj["UNIT_ID"] = unit;
+                obj["UNIT_ID"] = units[obj["UNIT_ID"]];
                 for (let key in obj) {
                     let content = obj[key];
                     let cell2 = tbodyRow2.insertCell();
@@ -128,7 +127,8 @@
                 keys.forEach((key) => {
                     newItem[key] = item[key];
                 })
-                newItem["TOTAL_PRICE"] = Math.round(item["QUANTITY"] * item["AMOUNT"] * 0) / 20;
+                // this may be incorrect sometimes
+                newItem["TOTAL_PRICE"] = Math.round(item["QUANTITY"] * item["AMOUNT"] * 100) / 100;
                 return newItem;
             })
             return filteredData;
