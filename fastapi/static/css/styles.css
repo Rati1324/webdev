@@ -1,17 +1,17 @@
 table {
     display: block;
-    max-height: 500px; 
+    height: 500px; 
     /* width: 1200px; */
     overflow-y: scroll;
     font-size: 12px;
 }
 
 .top_panel {
-    display: flex;
-    flex-direction: row;
+    /* display: flex; */
+    /* flex-direction: row; */
     /* width: 200px; */
-    justify-content: center;
-    align-items: center;
+    /* justify-content: center; */
+    /* align-items: center; */
 }
 
 .status_container {
