@@ -13,11 +13,11 @@
         <h4>თარიღის მიხედვით ფილტრაცია</h4>
         <div class="row">
             <div class="col">
-                <label for="startDate">დასაწყისი:</label>
+                <label for="startDate">დან:</label>
                 <input type="date" id="startDate" class="form-control">
             </div>
             <div class="col">
-                <label for="endDate">დასასრული:</label>
+                <label for="endDate">მდე:</label>
                 <input type="date" id="endDate" class="form-control">
             </div>
             <div class="col" style="display: flex; align-items: end;">
@@ -89,9 +89,7 @@
             return new XMLSerializer().serializeToString(xmlDoc);
         }
 
-        // doesnt work
         function filterByDate() {
-            // const xmlDoc = parser.parseFromString(getWaybillsXML, "application/xml");
             let startDate = document.querySelector("#startDate");
             let endDate = document.querySelector("#endDate");
             let filteredXML = replaceDates(getWaybillsXML, startDate.value, endDate.value);
@@ -125,7 +123,6 @@
         function prepareWaybillData(data) {
             let keys = ["W_NAME", "UNIT_ID", "QUANTITY", "AMOUNT", "PRICE", "TOTAL_PRICE", "BAR_CODE"]
             let goodsData = data["soap:Envelope"]["soap:Body"]["get_waybillResponse"]["get_waybillResult"]["WAYBILL"]["GOODS_LIST"]["GOODS"];
-            // console.log(filteredData)
             let filteredData = goodsData.map(item => {
                 let newItem = {};
                 keys.forEach((key) => {
@@ -141,7 +138,6 @@
 
         function fillTable(data) {
             let lastClicked = 0;
-            console.log(data)
             let filteredData = data.map(item => {
                 let newItem = {};
                 keys.forEach((key) => {
@@ -157,7 +153,6 @@
                 obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
                 obj["STATUS"] = statuses[parseInt(obj["STATUS"]-1)]
                 obj["BEGIN_DATE"] = obj["BEGIN_DATE"].replace("T", " ")
-                console.log(obj)
 
                 tbodyRow.addEventListener("click", () => {
                     if (lastClicked) {
