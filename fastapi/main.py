@@ -3,10 +3,12 @@ from fastapi import FastAPI, Request, Body
 from fastapi.templating import Jinja2Templates
 import jinja2
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 templates = Jinja2Templates(directory="templates")
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.mount("/static", StaticFiles(directory="./static"), name="static")
 
 @app.post("/fetch_data")
 async def fetch_data(xml: str = Body()):

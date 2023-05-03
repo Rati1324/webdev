@@ -5,12 +5,33 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link href="{{ url_for('static', path='/css/styles.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/styles.css">
     <title>Document</title>
 </head>
 <body>
     <div class="container">
-        <h4>თარიღის მიხედვით ფილტრაცია</h4>
+        
+        <div class="row top_panel">
+            <div class="status_container">
+                <span>სტატუსები</span>
+                <div class="status_inner_container">
+                    <div>
+                        <input type="checkbox"> 
+                        აქტივირებული
+                    </div>
+                    <div>
+                        <input type="checkbox"> 
+                        დასრულებული
+                    </div>
+                    <div>
+                        <input type="checkbox"> 
+                        გაუქმებული
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <div class="row">
             <div class="col">
                 <label for="startDate">დან:</label>
@@ -31,13 +52,13 @@
                 
                 </thead>
                 <tbody id="rows">
-
+                    
                 </tbody>
             </table>
         </div>
         
         <div class="row">
-            <table class="table table-bordered" id="dataTable2" style="height:300px">
+            <table class="table table-bordered" id="dataTable2">
                 <thead id="columns2">
                 </thead>
                 <tbody id="rows2">
@@ -179,6 +200,7 @@
                 for (let key in obj) {
                     let content = obj[key];
                     const cell = tbodyRow.insertCell();
+                    // cell.classList.add("col-1")
                     cell.textContent = content;
                 }
             }
