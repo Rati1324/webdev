@@ -31,11 +31,16 @@ table {
     font-size: 0.74em;
 }
 
+.date_filter {
+    margin-top: 20px
+}
+
 .date_filter *{
-    height: 30px
+    height: 30px;
+    border: none;
 }
 .filter_input {
-    height: 30px;
+    height: 25px;
     border-radius: 10px;
     width: 150px
 }

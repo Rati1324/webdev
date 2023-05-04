@@ -62,34 +62,31 @@
 
             <div class="col-2">
                 <div class="inner_container d-flex flex-column justify-content-center" style="border: none">
-                    <span class="d-flex justify-content-center">ფილტრაცია</span>
+                    <span class="d-flex justify-content-center" style="font-size: 1rem;">ფილტრაცია</span>
                     <div class="d-flex justify-content-center">
                         <input type="text" placeholder="" class="filter_input">
                     </div>
-                    <span class="d-flex justify-content-center">ჯამი</span>
+                    <span class="d-flex justify-content-center" style="font-size: 1rem;">ჯამი</span>
                     <div class="d-flex justify-content-center">
                         <input type="text" placeholder="" class="filter_input">
                     </div>
                 </div>
             </div>
 
-            <div class="col-2 d-flex flex-column justify-content-center date_filter ">
+            <div class="col-2 d-flex flex-column justify-content-center date_filter">
                 <div class="col">
-                    <input type="date" id="startDate" class="form-control">
+                    <input type="date" id="startDate" class="form-control" style="padding:0; border: none">
                 </div>
-                <button style="background-color: transparent; border: none">
+
+                <button style="background-color: transparent; border: none" onclick="filterByDate()">
                     <img src="static/unnamed.png" width="20" height="20">
                 </button>
-                <!-- <div class="col d-flex justify-content-center align-items-center" >
-
-                    <button class="btn btn-primary" style="font-size:0.6em; padding: 0px; text-align:center; vertical-align:middle" onclick="filterByDate()">ფილტრაცია</button>
-                </div> -->
+                
                 <div class="col">
                     <input type="date" id="endDate" class="form-control">
                 </div>
             </div>
         </div>
-
         
         <br>
         <div class="row">
