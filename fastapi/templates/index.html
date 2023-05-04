@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="row d-flex justify-content-start align-items-center">
+        <div class="row upper_panel d-flex justify-content-start align-items-center" style="">
             <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
                 <span class="d-flex justify-content-center">სტატუსები</span>
                 <div class="inner_container">
@@ -81,15 +81,15 @@
 
             <div class="col-md-2 d-flex flex-column justify-content-center align-items-center date_filter">
                 <div>
-                    <input type="date" id="startDate" class="form-control" style="padding:0; border: none">
+                    <input type="date" id="startDate" style="margin: 0">
                 </div>
 
-                <button style="background-color: transparent; margin-right:20px" onclick="filterByDate()">
+                <button class="d-flex" style="background-color: transparent;" onclick="filterByDate()">
                     <img src="static/unnamed.png" width="20" height="20">
                 </button>
                 
                 <div style="margin: 0">
-                    <input type="date" id="endDate" class="form-control">
+                    <input type="date" id="endDate">
                 </div>
             </div>
         </div>
