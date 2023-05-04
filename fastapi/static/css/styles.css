@@ -25,6 +25,7 @@ table {
     justify-content: space-evenly;
     padding: 10px;
     border: 1px #051b312f solid;
+    border: 1px #3236392f solid;
     border-radius: 10%;
     font-size: 0.74em;
 }
