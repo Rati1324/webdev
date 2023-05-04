@@ -43,16 +43,6 @@ table {
 .panel_container div {
 }
 
-.temp {
-    background-color: "red";
-    height: "200px";
-    border: "1px solid";
-    width: "200px";
-    background-color: black
-}
-
-
-
 table tr td {
     height: 5px;
     border: 1px solid;

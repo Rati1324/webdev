@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,9 +11,8 @@
 </head>
 <body>
     <div class="container">
-        
         <div class="row d-flex justify-content align-items-center ">
-            <div class="panel_container">
+            <div class="col-4 panel_container">
                 <span>სტატუსები</span>
                 <div class="inner_container">
                     <div>
@@ -30,21 +30,34 @@
                 </div>
             </div>
 
-            <div class="panel_container">
-                <span>სტატუსები</span>
+            <div class="col">
+                <span>ზედნადების ტიპები</span>
                 <div class="inner_container">
                     <div>
                         <input type="checkbox"> 
-                        აქტივირებული
+                        შიდა გადაზიდვა
                     </div>
                     <div>
                         <input type="checkbox"> 
-                        დასრულებული
+                        ტრანსპორტირებით
                     </div>
                     <div>
                         <input type="checkbox"> 
-                        გაუქმებული
+                        ტრანსპორტირების გარეშე
                     </div>
+                    <div>
+                        <input type="checkbox"> 
+                        დისტრიბუცია
+                    </div>
+                    <div>
+                        <input type="checkbox"> 
+                        ქვე-ზედნადები
+                    </div>
+                    <div>
+                        <input type="checkbox"> 
+                        უკან დაბრუნება
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -161,14 +174,18 @@
         function prepareWaybillData(data) {
             let keys = ["W_NAME", "UNIT_ID", "QUANTITY", "AMOUNT", "PRICE", "TOTAL_PRICE", "BAR_CODE"]
             let goodsData = data["soap:Envelope"]["soap:Body"]["get_waybillResponse"]["get_waybillResult"]["WAYBILL"]["GOODS_LIST"]["GOODS"];
-            let filteredData = goodsData.map(item => {
-                let newItem = {};
-                keys.forEach((key) => {
-                    newItem[key] = item[key];
+            let filteredData;
+            if (!Array.isArray(goodsdata)) {
+                goodsData = [goodsData]
+            }
+            filtereddata = goodsdata.map(item => {
+                let newitem = {};
+                keys.foreach((key) => {
+                    newitem[key] = item[key];
                 })
                 // this may be incorrect sometimes
-                newItem["TOTAL_PRICE"] = Math.round(item["QUANTITY"] * item["AMOUNT"] * 100) / 100;
-                return newItem;
+                newitem["total_price"] = Math.round(item["quantity"] * item["amount"] * 100) / 100;
+                return newitem;
             })
             return filteredData;
         }
@@ -177,11 +194,16 @@
 
         function fillTable(data) {
             let lastClicked = 0;
+            console.log(data)
+            if (!Array.isArray(data)) {
+                data = [data];
+            }
             let filteredData = data.map(item => {
                 let newItem = {};
                 keys.forEach((key) => {
                     newItem[key] = item[key];
                 })
+                newItem["total_price"] = Math.round(item["quantity"] * item["amount"] * 100) / 100;
                 return newItem;
             })
 
