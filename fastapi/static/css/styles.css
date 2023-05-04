@@ -36,9 +36,11 @@ table {
 }
 
 .date_filter *{
-    height: 30px;
+    /* height: 30px; */
     border: none;
+    padding: 0;
 }
+
 .filter_input {
     height: 25px;
     border-radius: 10px;

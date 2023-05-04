@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <div class="row d-flex justify-content-start align-items-center">
-            <div class="col-2 d-flex flex-column justify-content-center">
+            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
                 <span class="d-flex justify-content-center">სტატუსები</span>
                 <div class="inner_container">
                     <div>
@@ -29,38 +29,44 @@
                 </div>
             </div>
 
-            <div class="col-4">
+            <div class="col-md-4">
                 <span class="d-flex justify-content-center">ზედნადების ტიპები</span>
-                <div class="inner_container d-flex flex-wrap">
-                    <div>
-                        <input type="checkbox"> 
-                        შიდა გადაზიდვა
-                    </div>
-                    <div>
-                        <input type="checkbox"> 
-                        ტრანსპორტირებით
-                    </div>
-                    <div>
-                        <input type="checkbox"> 
-                        ტრანსპორტირების გარეშე
-                    </div>
-                    <div>
-                        <input type="checkbox"> 
-                        დისტრიბუცია
-                    </div>
-                    <div>
-                        <input type="checkbox"> 
-                        ქვე-ზედნადები
-                    </div>
-                    <div>
-                        <input type="checkbox"> 
-                        უკან დაბრუნება
-                    </div>
+                <div class="row inner_container">
+                    <div class="d-flex align-items-center">
+                        <div class="col-7">
+                            <div>
+                                <input type="checkbox"> 
+                                შიდა გადაზიდვა
+                            </div>
+                            <div>
+                                <input type="checkbox"> 
+                                ტრანსპორტირებით
+                            </div>
+                            <div>
+                                <input type="checkbox"> 
+                                ტრანსპორტირების გარ..
+                            </div>
+                        </div>
 
+                        <div class="col-5">
+                            <div>
+                                <input type="checkbox"> 
+                                დისტრიბუცია
+                            </div>
+                            <div>
+                                <input type="checkbox"> 
+                                ქვე-ზედნადები
+                            </div>
+                            <div>
+                                <input type="checkbox"> 
+                                უკან დაბრუნება
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-2">
+            <div class="col-md-2">
                 <div class="inner_container d-flex flex-column justify-content-center" style="border: none">
                     <span class="d-flex justify-content-center" style="font-size: 1rem;">ფილტრაცია</span>
                     <div class="d-flex justify-content-center">
@@ -73,16 +79,16 @@
                 </div>
             </div>
 
-            <div class="col-2 d-flex flex-column justify-content-center date_filter">
-                <div class="col">
+            <div class="col-md-2 d-flex flex-column justify-content-center align-items-center date_filter">
+                <div>
                     <input type="date" id="startDate" class="form-control" style="padding:0; border: none">
                 </div>
 
-                <button style="background-color: transparent; border: none" onclick="filterByDate()">
+                <button style="background-color: transparent; margin-right:20px" onclick="filterByDate()">
                     <img src="static/unnamed.png" width="20" height="20">
                 </button>
                 
-                <div class="col">
+                <div style="margin: 0">
                     <input type="date" id="endDate" class="form-control">
                 </div>
             </div>
