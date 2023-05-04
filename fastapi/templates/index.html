@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,13 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/css/styles.css">
-    <title>Document</title>
+    <title>RS</title>
 </head>
 <body>
     <div class="container">
-        <div class="row d-flex justify-content align-items-center ">
-            <div class="col-4 panel_container">
-                <span>სტატუსები</span>
+        <div class="row d-flex justify-content-start align-items-center">
+            <div class="col-2 d-flex flex-column justify-content-center">
+                <span class="d-flex justify-content-center">სტატუსები</span>
                 <div class="inner_container">
                     <div>
                         <input type="checkbox"> 
@@ -30,9 +29,9 @@
                 </div>
             </div>
 
-            <div class="col">
-                <span>ზედნადების ტიპები</span>
-                <div class="inner_container">
+            <div class="col-4">
+                <span class="d-flex justify-content-center">ზედნადების ტიპები</span>
+                <div class="inner_container d-flex flex-wrap">
                     <div>
                         <input type="checkbox"> 
                         შიდა გადაზიდვა
@@ -60,22 +59,38 @@
 
                 </div>
             </div>
+
+            <div class="col-2">
+                <div class="inner_container d-flex flex-column justify-content-center" style="border: none">
+                    <span class="d-flex justify-content-center">ფილტრაცია</span>
+                    <div class="d-flex justify-content-center">
+                        <input type="text" placeholder="" class="filter_input">
+                    </div>
+                    <span class="d-flex justify-content-center">ჯამი</span>
+                    <div class="d-flex justify-content-center">
+                        <input type="text" placeholder="" class="filter_input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-2 d-flex flex-column justify-content-center date_filter ">
+                <div class="col">
+                    <input type="date" id="startDate" class="form-control">
+                </div>
+                <button style="background-color: transparent; border: none">
+                    <img src="static/unnamed.png" width="20" height="20">
+                </button>
+                <!-- <div class="col d-flex justify-content-center align-items-center" >
+
+                    <button class="btn btn-primary" style="font-size:0.6em; padding: 0px; text-align:center; vertical-align:middle" onclick="filterByDate()">ფილტრაცია</button>
+                </div> -->
+                <div class="col">
+                    <input type="date" id="endDate" class="form-control">
+                </div>
+            </div>
         </div>
 
-
-        <div class="row">
-            <div class="col">
-                <label for="startDate">დან:</label>
-                <input type="date" id="startDate" class="form-control">
-            </div>
-            <div class="col">
-                <label for="endDate">მდე:</label>
-                <input type="date" id="endDate" class="form-control">
-            </div>
-            <div class="col" style="display: flex; align-items: end;">
-                <button type="submit" class="btn btn-primary" onclick="filterByDate()">ფილტრაცია</button>
-            </div>
-        </div>
+        
         <br>
         <div class="row">
             <table class="table table-bordered" id="dataTable1">
@@ -175,16 +190,16 @@
             let keys = ["W_NAME", "UNIT_ID", "QUANTITY", "AMOUNT", "PRICE", "TOTAL_PRICE", "BAR_CODE"]
             let goodsData = data["soap:Envelope"]["soap:Body"]["get_waybillResponse"]["get_waybillResult"]["WAYBILL"]["GOODS_LIST"]["GOODS"];
             let filteredData;
-            if (!Array.isArray(goodsdata)) {
+            if (!Array.isArray(goodsData)) {
                 goodsData = [goodsData]
             }
-            filtereddata = goodsdata.map(item => {
+            filteredData = goodsData.map(item => {
                 let newitem = {};
-                keys.foreach((key) => {
+                keys.forEach((key) => {
                     newitem[key] = item[key];
                 })
                 // this may be incorrect sometimes
-                newitem["total_price"] = Math.round(item["quantity"] * item["amount"] * 100) / 100;
+                newitem["TOTAL_PRICE"] = Math.round((item["QUANTITY"] * item["AMOUNT"]) * 100) / 100;
                 return newitem;
             })
             return filteredData;
@@ -194,7 +209,6 @@
 
         function fillTable(data) {
             let lastClicked = 0;
-            console.log(data)
             if (!Array.isArray(data)) {
                 data = [data];
             }
@@ -203,10 +217,10 @@
                 keys.forEach((key) => {
                     newItem[key] = item[key];
                 })
-                newItem["total_price"] = Math.round(item["quantity"] * item["amount"] * 100) / 100;
                 return newItem;
             })
-
+            
+            console.log(filteredData)
             const rows = document.querySelector("#rows");
             rows.innerHTML = "";
             for (let obj of filteredData) {
@@ -250,7 +264,6 @@
             let thead = document.querySelector("#columns");
             let preparedData = prepareWaybills(data);
             let theadRow = thead.insertRow();
-            
             let thead2 = document.querySelector("#columns2");
             let fields2 = ["RS დასახელება", "ერთეული", "რაოდენობა", "RS ფასი", "ფასი", "ჯამი", "RS კოდი"];
             let theadRow2 = thead2.insertRow();

@@ -3,7 +3,7 @@ table {
     height: 500px; 
     /* width: 1200px; */
     overflow-y: scroll;
-    font-size: 12px;
+    font-size: 0.77em;
 }
 
 .top_panel {
@@ -21,23 +21,36 @@ table {
 }
 
 .inner_container {
-    height: 100px;
+    height: 80px;
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
     padding: 10px;
     border: 1px solid;
     border-radius: 10%;
+    font-size: 0.74em;
 }
 
+.date_filter *{
+    height: 30px
+}
+.filter_input {
+    height: 30px;
+    border-radius: 10px;
+    width: 150px
+}
 .inner_container div {
     /* display: flex; */
+    /* width: 100px;
+    height: 50px;
+    border: 1px solid red;
+    margin: 10px; */
 }
 
 .panel_container {
-    display: flex;
+    /* display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: center; */
 }
 
 .panel_container div {
