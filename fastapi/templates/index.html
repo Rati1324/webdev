@@ -192,9 +192,10 @@
                     filteredXML = replaceStatuses(filteredXML, statusesValues);
                 })
             }
-            
-            filteredXML = replaceDates(filteredXML, startDate.value, endDate.value);
-            console.log(filteredXML);
+            if ((startDate.value + endDate.value).length) {
+                filteredXML = replaceDates(filteredXML, startDate.value, endDate.value);
+            }
+
             fetchData(filteredXML).then((data) => {
                 fillTable(prepareWaybills(data));
             });
@@ -204,7 +205,7 @@
             const xmlDoc = parser.parseFromString(getWaybillXML, "application/xml");
             const waybillIDElem = xmlDoc.getElementsByTagName("waybill_id")[0];
             waybillIDElem.textContent = waybillID;
-            return new XMLSerializer().serializeToString(xmlDoc);
+            console.log(new XMLSerializer().serializeToString(xmlDoc));
         }
 
         function fillProductsTable(data) {
@@ -270,12 +271,11 @@
                         lastClicked.style.backgroundColor = "white"
                     }
                     lastClicked = tbodyRow;
-                    tbodyRow.style.backgroundColor = "#404240";
                     let xml = prepareGetwaybillXML(obj["ID"]);
-                    fetchData(xml).then(data => {
-                        let filteredData = prepareWaybillData(data);
-                        fillProductsTable(filteredData);
-                    })
+                    // fetchData(xml).then(data => {
+                    //     let filteredData = prepareWaybillData(data);
+                    //     fillProductsTable(filteredData);
+                    // })
                 })
                 tbodyRow.addEventListener("mouseover", () => {
                     tbodyRow.style.backgroundColor = "#3236392f";
