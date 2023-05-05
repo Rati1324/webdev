@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/css/styles.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <title>RS</title>
 </head>
 <body>
@@ -15,16 +17,16 @@
                 <span class="d-flex justify-content-center">სტატუსები</span>
                 <div class="inner_container">
                     <div>
-                        <input type="checkbox"> 
-                        <span>აქტივირებული</span>
+                        <input type="checkbox" class="status" id="status_1", value="1"> 
+                        <label for="status_1">აქტივირებული</span>
                     </div>
                     <div>
-                        <input type="checkbox"> 
-                        დასრულებული
+                        <input type="checkbox" class="status" id="status_2", value="2"> 
+                        <label for="status_2">დასრულებული</span>
                     </div>
                     <div>
-                        <input type="checkbox"> 
-                        გაუქმებული
+                        <input type="checkbox" class="status" id="status_3", value="0"> 
+                        <label for="status_3">შენახული</span>
                     </div>
                 </div>
             </div>
@@ -84,8 +86,8 @@
                     <input type="date" id="startDate" style="margin: 0">
                 </div>
 
-                <button class="d-flex" style="background-color: transparent;" onclick="filterByDate()">
-                    <img src="static/unnamed.png" width="20" height="20">
+                <button class="d-flex" style="background-color: transparent;" onclick="filterData()">
+                    <img src="static/images/rs.png" width="20" height="20">
                 </button>
                 
                 <div style="margin: 0">
@@ -141,6 +143,7 @@
         const fields1 = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
 
         async function fetchData(xml) {
+            console.log(xml)
             const response = await fetch("/fetch_data", {
                 method: "POST",
                 headers: {
@@ -152,8 +155,17 @@
             return data;
         }
 
-        function prepareWaybills(data) {
-            return data["soap:Envelope"]["soap:Body"]["get_buyer_waybillsResponse"]["get_buyer_waybillsResult"]["WAYBILL_LIST"]["WAYBILL"];
+        function replaceStatuses(xmlString, statuses) {
+            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+
+            const statusesElem = xmlDoc.getElementsByTagName("statuses")[0];
+            let statusesString = "";
+            statuses.forEach(s => {
+                statusesString += "," + s
+            })
+            statusesString += ",";
+            statusesElem.textContent = statusesString;
+            return new XMLSerializer().serializeToString(xmlDoc);
         }
 
         function replaceDates(xmlString, newDate1, newDate2) {
@@ -168,10 +180,18 @@
             return new XMLSerializer().serializeToString(xmlDoc);
         }
 
-        function filterByDate() {
+        function filterData() {
             let startDate = document.querySelector("#startDate");
             let endDate = document.querySelector("#endDate");
-            let filteredXML = replaceDates(getWaybillsXML, startDate.value, endDate.value);
+            let statuses = document.querySelectorAll(".status:checked");
+            let statusesValues = []
+            statuses.forEach(item => {
+                statusesValues.push(item.value)
+            })
+            
+            console.log(statusesValues);
+            let filteredXML = replaceStatuses(getWaybillsXML, statusesValues);
+            filteredXML = replaceDates(filteredXML, startDate.value, endDate.value);
             fetchData(filteredXML).then((data) => {
                 fillTable(prepareWaybills(data));
             });
@@ -198,13 +218,17 @@
             }
         }
 
+        function prepareWaybills(data) {
+            let preparedData = data["soap:Envelope"]["soap:Body"]["get_buyer_waybillsResponse"]["get_buyer_waybillsResult"]["WAYBILL_LIST"]["WAYBILL"];
+            return typeof(preparedData) === "undefined" ? [] : preparedData;
+        }
+
         function prepareWaybillData(data) {
             let keys = ["W_NAME", "UNIT_ID", "QUANTITY", "AMOUNT", "PRICE", "TOTAL_PRICE", "BAR_CODE"]
             let goodsData = data["soap:Envelope"]["soap:Body"]["get_waybillResponse"]["get_waybillResult"]["WAYBILL"]["GOODS_LIST"]["GOODS"];
             let filteredData;
-            if (!Array.isArray(goodsData)) {
-                goodsData = [goodsData]
-            }
+
+            !Array.isArray(data) ? goodsData = [goodsData] : null;
             filteredData = goodsData.map(item => {
                 let newitem = {};
                 keys.forEach((key) => {
@@ -221,10 +245,8 @@
 
         function fillTable(data) {
             let lastClicked = 0;
-            if (!Array.isArray(data)) {
-                data = [data];
-            }
-            let filteredData = data.map(item => {
+            !Array.isArray(data) ? data = [data] : null;
+            let filteredData = data.map(item => {;
                 let newItem = {};
                 keys.forEach((key) => {
                     newItem[key] = item[key];
@@ -232,13 +254,12 @@
                 return newItem;
             })
             
-            console.log(filteredData)
             const rows = document.querySelector("#rows");
             rows.innerHTML = "";
             for (let obj of filteredData) {
                 const tbodyRow = rows.insertRow();
                 obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
-                obj["STATUS"] = statuses[parseInt(obj["STATUS"]-1)]
+                obj["STATUS"] = statuses[parseInt(obj["STATUS"])]
                 obj["BEGIN_DATE"] = obj["BEGIN_DATE"].replace("T", " ")
 
                 tbodyRow.addEventListener("click", () => {
@@ -274,7 +295,6 @@
 
         fetchData(getWaybillsXML).then((data) => {
             let thead = document.querySelector("#columns");
-            let preparedData = prepareWaybills(data);
             let theadRow = thead.insertRow();
             let thead2 = document.querySelector("#columns2");
             let fields2 = ["RS დასახელება", "ერთეული", "რაოდენობა", "RS ფასი", "ფასი", "ჯამი", "RS კოდი"];
@@ -291,6 +311,8 @@
                 th.textContent = field;
                 theadRow.appendChild(th)
             })
+            
+            let preparedData = prepareWaybills(data);
             fillTable(preparedData);
         })
 
