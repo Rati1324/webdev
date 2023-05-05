@@ -143,7 +143,6 @@
         const fields1 = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
 
         async function fetchData(xml) {
-            console.log(xml)
             const response = await fetch("/fetch_data", {
                 method: "POST",
                 headers: {
@@ -184,14 +183,18 @@
             let startDate = document.querySelector("#startDate");
             let endDate = document.querySelector("#endDate");
             let statuses = document.querySelectorAll(".status:checked");
-            let statusesValues = []
-            statuses.forEach(item => {
-                statusesValues.push(item.value)
-            })
+            let statusesValues = [];
+            let filteredXML = getWaybillsXML;
+
+            if (statuses.length) {
+                statuses.forEach(item => {
+                    statusesValues.push(item.value);
+                    filteredXML = replaceStatuses(filteredXML, statusesValues);
+                })
+            }
             
-            console.log(statusesValues);
-            let filteredXML = replaceStatuses(getWaybillsXML, statusesValues);
             filteredXML = replaceDates(filteredXML, startDate.value, endDate.value);
+            console.log(filteredXML);
             fetchData(filteredXML).then((data) => {
                 fillTable(prepareWaybills(data));
             });
