@@ -34,34 +34,34 @@
             <div class="col-md-4">
                 <span class="d-flex justify-content-center">ზედნადების ტიპები</span>
                 <div class="row inner_container">
-                    <div class="d-flex align-items-center">
-                        <div class="col-7">
+                    <div class="d-flex align-items-center" id="typesCheckboxes">
+                        <div class="col-7" >
                             <div>
-                                <input type="checkbox"> 
-                                შიდა გადაზიდვა
+                                <input type="checkbox" id="inner" value="1"> 
+                                <label for="inner">შიდა გადაზიდვა</label>
                             </div>
                             <div>
-                                <input type="checkbox"> 
-                                ტრანსპორტირებით
+                                <input type="checkbox" id="transport" value="2"> 
+                                <label for="transport"> ტრანსპორტირებით </label>
                             </div>
                             <div>
-                                <input type="checkbox"> 
-                                ტრანსპორტირების გარ..
+                                <input type="checkbox" id="without_transport" value="3"> 
+                                <label for="without_transport"> ტრანსპორტირების გარ.. </label>
                             </div>
                         </div>
 
                         <div class="col-5">
                             <div>
-                                <input type="checkbox"> 
-                                დისტრიბუცია
+                                <input type="checkbox" id="dist" value="4"> 
+                                <label for="dist"> დისტრიბუცია </label>
                             </div>
                             <div>
-                                <input type="checkbox"> 
-                                ქვე-ზედნადები
+                                <input type="checkbox" id="return" value="5"> 
+                                <label for="return"> უკან დაბრუნება </label>
                             </div>
                             <div>
-                                <input type="checkbox"> 
-                                უკან დაბრუნება
+                                <input type="checkbox" id="sub" value="6"> 
+                                <label for="sub"> ქვე-ზედნადები </label>
                             </div>
                         </div>
                     </div>
@@ -154,17 +154,29 @@
             return data;
         }
 
-        function replaceStatuses(xmlString, statuses) {
+        function replaceStatusesOrTypes(xmlString, statuses, field) {
             const xmlDoc = parser.parseFromString(xmlString, "application/xml");
 
-            const statusesElem = xmlDoc.getElementsByTagName("statuses")[0];
-            let statusesString = "";
+            const elem = xmlDoc.getElementsByTagName(field)[0];
+            let str = "";
             statuses.forEach(s => {
+                str += "," + s
+            })
+            str += ",";
+            elem.textContent = str;
+            return new XMLSerializer().serializeToString(xmlDoc);
+        }
+
+        function replaceTypes(xmlString, types) {
+            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+            const statusesElem = xmlDoc.getElementsByTagName("statuses")[0];
+
+            let typesString = "";
+            types.forEach(s => {
                 statusesString += "," + s
             })
             statusesString += ",";
-            statusesElem.textContent = statusesString;
-            return new XMLSerializer().serializeToString(xmlDoc);
+
         }
 
         function replaceDates(xmlString, newDate1, newDate2) {
@@ -183,19 +195,38 @@
             let startDate = document.querySelector("#startDate");
             let endDate = document.querySelector("#endDate");
             let statuses = document.querySelectorAll(".status:checked");
+            let types = document.querySelectorAll("#typesCheckboxes input:checked");
             let statusesValues = [];
+            let typesValues = [];
             let filteredXML = getWaybillsXML;
 
             if (statuses.length) {
                 statuses.forEach(item => {
                     statusesValues.push(item.value);
-                    filteredXML = replaceStatuses(filteredXML, statusesValues);
                 })
+                filteredXML = replaceStatusesOrTypes(filteredXML, statusesValues, "statuses");
             }
+            
+            if (types.length) {
+                console.log(types)
+                types.forEach(item => {
+                    typesValues.push(item.value);
+                })
+                filteredXML = replaceStatusesOrTypes(filteredXML, typesValues, "itypes");
+            }
+
             if ((startDate.value + endDate.value).length) {
                 filteredXML = replaceDates(filteredXML, startDate.value, endDate.value);
             }
-
+            console.log(filteredXML)
+            
+            // if (types.length) {
+            //     types.forEach(t => {
+            //         typesValues.push(t.value);
+            //         filteredXML = replaceTypes(filteredXML, typesValues);
+            //     })
+            // }
+            
             fetchData(filteredXML).then((data) => {
                 fillTable(prepareWaybills(data));
             });
@@ -205,7 +236,7 @@
             const xmlDoc = parser.parseFromString(getWaybillXML, "application/xml");
             const waybillIDElem = xmlDoc.getElementsByTagName("waybill_id")[0];
             waybillIDElem.textContent = waybillID;
-            console.log(new XMLSerializer().serializeToString(xmlDoc));
+            return new XMLSerializer().serializeToString(xmlDoc);
         }
 
         function fillProductsTable(data) {
@@ -231,16 +262,17 @@
             let keys = ["W_NAME", "UNIT_ID", "QUANTITY", "AMOUNT", "PRICE", "TOTAL_PRICE", "BAR_CODE"]
             let goodsData = data["soap:Envelope"]["soap:Body"]["get_waybillResponse"]["get_waybillResult"]["WAYBILL"]["GOODS_LIST"]["GOODS"];
             let filteredData;
-
+            
             !Array.isArray(data) ? goodsData = [goodsData] : null;
             filteredData = goodsData.map(item => {
-                let newitem = {};
+                let newItem = {};
+                console.log(item)
                 keys.forEach((key) => {
-                    newitem[key] = item[key];
+                    newItem[key] = item[key];
                 })
                 // this may be incorrect sometimes
-                newitem["TOTAL_PRICE"] = Math.round((item["QUANTITY"] * item["AMOUNT"]) * 100) / 100;
-                return newitem;
+                newItem["TOTAL_PRICE"] = Math.round((item["QUANTITY"] * item["AMOUNT"]) * 100) / 100;
+                return newItem;
             })
             return filteredData;
         }
@@ -272,10 +304,11 @@
                     }
                     lastClicked = tbodyRow;
                     let xml = prepareGetwaybillXML(obj["ID"]);
-                    // fetchData(xml).then(data => {
-                    //     let filteredData = prepareWaybillData(data);
-                    //     fillProductsTable(filteredData);
-                    // })
+                    fetchData(xml).then(data => {
+                        let filteredData = prepareWaybillData(data);
+                        // console.log(filteredData)
+                        fillProductsTable(filteredData);
+                    })
                 })
                 tbodyRow.addEventListener("mouseover", () => {
                     tbodyRow.style.backgroundColor = "#3236392f";
