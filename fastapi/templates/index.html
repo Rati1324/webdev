@@ -72,11 +72,11 @@
                 <div class="inner_container d-flex flex-column justify-content-center" style="border: none">
                     <span class="d-flex justify-content-center" style="font-size: 1rem;">ფილტრაცია</span>
                     <div class="d-flex justify-content-center">
-                        <input type="text" placeholder="" class="filter_input">
+                        <input type="text" placeholder="" class="filter_input" id="filterValue">
                     </div>
                     <span class="d-flex justify-content-center" style="font-size: 1rem;">ჯამი</span>
                     <div class="d-flex justify-content-center">
-                        <input type="text" placeholder="" class="filter_input">
+                        <input type="text" placeholder="" class="filter_input" id="total" readonly>
                     </div>
                 </div>
             </div>
@@ -167,18 +167,6 @@
             return new XMLSerializer().serializeToString(xmlDoc);
         }
 
-        function replaceTypes(xmlString, types) {
-            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-            const statusesElem = xmlDoc.getElementsByTagName("statuses")[0];
-
-            let typesString = "";
-            types.forEach(s => {
-                statusesString += "," + s
-            })
-            statusesString += ",";
-
-        }
-
         function replaceDates(xmlString, newDate1, newDate2) {
             const xmlDoc = parser.parseFromString(xmlString, "application/xml");
 
@@ -191,11 +179,18 @@
             return new XMLSerializer().serializeToString(xmlDoc);
         }
 
+        function replaceFilterValue(xmlString, value) {
+            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+            const filterEleme = xmlDoc.getElementsByTagName("")[0];
+        }
+
         function filterData() {
             let startDate = document.querySelector("#startDate");
             let endDate = document.querySelector("#endDate");
             let statuses = document.querySelectorAll(".status:checked");
             let types = document.querySelectorAll("#typesCheckboxes input:checked");
+            let filterValue = document.querySelector("#filterValue").value;
+
             let statusesValues = [];
             let typesValues = [];
             let filteredXML = getWaybillsXML;
@@ -208,7 +203,6 @@
             }
             
             if (types.length) {
-                console.log(types)
                 types.forEach(item => {
                     typesValues.push(item.value);
                 })
@@ -218,17 +212,9 @@
             if ((startDate.value + endDate.value).length) {
                 filteredXML = replaceDates(filteredXML, startDate.value, endDate.value);
             }
-            console.log(filteredXML)
-            
-            // if (types.length) {
-            //     types.forEach(t => {
-            //         typesValues.push(t.value);
-            //         filteredXML = replaceTypes(filteredXML, typesValues);
-            //     })
-            // }
             
             fetchData(filteredXML).then((data) => {
-                fillTable(prepareWaybills(data));
+                fillTable(prepareWaybills(data), filterValue);
             });
         }
 
@@ -279,8 +265,10 @@
 
         const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
 
-        function fillTable(data) {
+        function fillTable(data, filterValue) {
             let lastClicked = 0;
+            let total = 0;
+            
             !Array.isArray(data) ? data = [data] : null;
             let filteredData = data.map(item => {;
                 let newItem = {};
@@ -292,41 +280,51 @@
             
             const rows = document.querySelector("#rows");
             rows.innerHTML = "";
+            console.log(filterValue)
             for (let obj of filteredData) {
-                const tbodyRow = rows.insertRow();
-                obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
-                obj["STATUS"] = statuses[parseInt(obj["STATUS"])]
-                obj["BEGIN_DATE"] = obj["BEGIN_DATE"].replace("T", " ")
+                if (filterValue.length && 
+                    (!obj["SELLER_NAME"].includes(filterValue) && !obj["ID"].includes(filterValue) && !obj["BUYER_TIN"].includes(filterValue))) {
+                    console.log(obj, filterValue)
+                    continue;
+                }
+                else {
+                    const tbodyRow = rows.insertRow();
+                    total += parseFloat(obj["FULL_AMOUNT"]);
+                    obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
+                    obj["STATUS"] = statuses[parseInt(obj["STATUS"])]
+                    obj["BEGIN_DATE"] = obj["BEGIN_DATE"].replace("T", " ")
 
-                tbodyRow.addEventListener("click", () => {
-                    if (lastClicked) {
-                        lastClicked.style.backgroundColor = "white"
-                    }
-                    lastClicked = tbodyRow;
-                    let xml = prepareGetwaybillXML(obj["ID"]);
-                    fetchData(xml).then(data => {
-                        let filteredData = prepareWaybillData(data);
-                        // console.log(filteredData)
-                        fillProductsTable(filteredData);
+                    tbodyRow.addEventListener("click", () => {
+                        if (lastClicked) {
+                            lastClicked.style.backgroundColor = "white"
+                        }
+                        lastClicked = tbodyRow;
+                        let xml = prepareGetwaybillXML(obj["ID"]);
+                        fetchData(xml).then(data => {
+                            let filteredData = prepareWaybillData(data);
+                            // console.log(filteredData)
+                            fillProductsTable(filteredData);
+                        })
                     })
-                })
-                tbodyRow.addEventListener("mouseover", () => {
-                    tbodyRow.style.backgroundColor = "#3236392f";
-                    tbodyRow.style.cursor = "pointer";
-                })
-                tbodyRow.addEventListener("mouseleave", () => {
-                    if (tbodyRow !== lastClicked) {
-                        tbodyRow.style.backgroundColor = "white"
-                    }
-                })
+                    tbodyRow.addEventListener("mouseover", () => {
+                        tbodyRow.style.backgroundColor = "#3236392f";
+                        tbodyRow.style.cursor = "pointer";
+                    })
+                    tbodyRow.addEventListener("mouseleave", () => {
+                        if (tbodyRow !== lastClicked) {
+                            tbodyRow.style.backgroundColor = "white"
+                        }
+                    })
 
-                for (let key in obj) {
-                    let content = obj[key];
-                    const cell = tbodyRow.insertCell();
-                    // cell.classList.add("col-1")
-                    cell.textContent = content;
+                    for (let key in obj) {
+                        let content = obj[key];
+                        const cell = tbodyRow.insertCell();
+                        cell.textContent = content;
+                    }
                 }
             }
+            document.querySelector("#total").value = Math.round(total * 100) / 100;;
+                    
         }
 
         fetchData(getWaybillsXML).then((data) => {
@@ -349,7 +347,7 @@
             })
             
             let preparedData = prepareWaybills(data);
-            fillTable(preparedData);
+            fillTable(preparedData, "");
         })
 
     </script>
