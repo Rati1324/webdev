@@ -249,10 +249,9 @@
             let goodsData = data["soap:Envelope"]["soap:Body"]["get_waybillResponse"]["get_waybillResult"]["WAYBILL"]["GOODS_LIST"]["GOODS"];
             let filteredData;
             
-            !Array.isArray(data) ? goodsData = [goodsData] : null;
+            !Array.isArray(goodsData) ? goodsData = [goodsData] : null;
             filteredData = goodsData.map(item => {
                 let newItem = {};
-                console.log(item)
                 keys.forEach((key) => {
                     newItem[key] = item[key];
                 })
@@ -280,11 +279,9 @@
             
             const rows = document.querySelector("#rows");
             rows.innerHTML = "";
-            console.log(filterValue)
             for (let obj of filteredData) {
                 if (filterValue.length && 
                     (!obj["SELLER_NAME"].includes(filterValue) && !obj["ID"].includes(filterValue) && !obj["BUYER_TIN"].includes(filterValue))) {
-                    console.log(obj, filterValue)
                     continue;
                 }
                 else {
@@ -302,7 +299,6 @@
                         let xml = prepareGetwaybillXML(obj["ID"]);
                         fetchData(xml).then(data => {
                             let filteredData = prepareWaybillData(data);
-                            // console.log(filteredData)
                             fillProductsTable(filteredData);
                         })
                     })
