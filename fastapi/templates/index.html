@@ -284,9 +284,9 @@
                 }
                 const tbodyRow = rows.insertRow();
 
-                total += parseFloat(obj["FULL_AMOUNT"]);
-                obj.getElementsByTagName("TYPE")[0].textContent = types[parseInt(obj.getElementsByTagName("TYPE")[0])-1];
-                obj.getElementsByTagName("STATUS")[0].textContent = statuses[parseInt(obj.getElementsByTagName("STATUS")[0])]
+                total += parseFloat(obj.getElementsByTagName("FULL_AMOUNT")[0].textContent);
+                obj.getElementsByTagName("TYPE")[0].textContent = types[parseInt(obj.getElementsByTagName("TYPE")[0].textContent)-1];
+                obj.getElementsByTagName("STATUS")[0].textContent = statuses[parseInt(obj.getElementsByTagName("STATUS")[0].textContent)]
                 obj.getElementsByTagName("BEGIN_DATE")[0].textContent = obj.getElementsByTagName("BEGIN_DATE")[0].textContent.replace("T", " ")
 
                 tbodyRow.addEventListener("click", () => {
@@ -314,7 +314,6 @@
 
                 for (let key of obj.childNodes) {
                     let content = obj.getElementsByTagName(key.nodeName)[0].textContent
-                    console.log(content)
                     const cell = tbodyRow.insertCell();
                     cell.textContent = content;
                 }
