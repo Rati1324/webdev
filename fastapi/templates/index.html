@@ -160,7 +160,7 @@
         }
 
         function replaceStatusesOrTypes(xmlObj, statuses, field) {
-            const elem = xmlObj.getElementsByTagName(field)[0];
+            const elem = xmlObj.querySelector(field);
             let str = "";
             statuses.forEach(s => {
                 str += "," + s
@@ -171,18 +171,13 @@
         }
 
         function replaceDates(xmlObj, newDate1, newDate2) {
-            const dateBegineElem = xmlObj.getElementsByTagName("begin_date_e")[0];
-            const dateBeginsElem = xmlObj.getElementsByTagName("begin_date_s")[0];
+            const dateBegineElem = xmlObj.querySelector("begin_date_e");
+            const dateBeginsElem = xmlObj.querySelector("begin_date_s");
 
             dateBeginsElem.textContent = newDate1;
             dateBegineElem.textContent = newDate2;
             return xmlObj;
         }
-
-        // function replaceFilterValue(xmlString, value) {
-        //     const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-        //     const filterEleme = xmlDoc.getElementsByTagName("")[0];
-        // }
 
         function filterData() {
             let startDate = document.querySelector("#startDate");
@@ -214,90 +209,73 @@
             }
             let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
             fetchData(xmlString).then((data) => {
-                fillTable(prepareWaybillsData(data), filterValue);
+                fillTable(data, filterValue);
             });
         }
 
         function prepareGetwaybillXML(waybillID) {
             const xmlDoc = parser.parseFromString(getWaybillXML, "application/xml");
-            const waybillIDElem = xmlDoc.getElementsByTagName("waybill_id")[0];
+            const waybillIDElem = xmlDoc.querySelector("waybill_id");
             waybillIDElem.textContent = waybillID;
             return new XMLSerializer().serializeToString(xmlDoc);
         }
 
         function fillProductsTable(data) {
+            let keys = ["W_NAME", "UNIT_ID", "QUANTITY", "AMOUNT", "PRICE", "total_price", "BAR_CODE"]
+            let goodsData = data.querySelector("GOODS_LIST").childNodes;
+
             const rows2 = document.querySelector("#rows2");
             rows2.innerHTML = "";
-            for (let obj of data) {
+            for (let obj of goodsData) {
                 let tbodyRow2 = rows2.insertRow();
-                obj["UNIT_ID"] = units[obj["UNIT_ID"]];
-                for (let key in obj) {
-                    let content = obj[key];
-                    let cell2 = tbodyRow2.insertCell();
-                    cell2.textContent = content;
-                }
-            }
-        }
+                obj.querySelector("UNIT_ID").textContent = units[parseInt(obj.querySelector("UNIT_ID").textContent)];
 
-        function prepareWaybillsData(data) {
-            const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
-            let preparedData = data.getElementsByTagName("WAYBILL_LIST")[0];
-            for (const childElement of preparedData.children) {
-                for (let i = childElement.children.length - 1; i >= 0; i--) {
-                    const childField = childElement.children[i];
-                    if (!keys.includes(childField.nodeName)) {
-                        childElement.removeChild(childField);
+                let quantity = parseFloat(obj.querySelector("QUANTITY").textContent);
+                let amount = parseFloat(obj.querySelector("AMOUNT").textContent);
+                let newElem = document.createElement("TOTAL_PRICE");
+                newElem.textContent = Math.round((quantity * amount) * 100) / 100;
+                obj.insertBefore(newElem, obj.querySelector("BAR_CODE"));
+
+                for (let key of obj.childNodes) {
+                    if (keys.includes(key.nodeName)) {
+                        let content = obj.querySelector(key.nodeName).textContent;
+                        let cell2 = tbodyRow2.insertCell();
+                        cell2.textContent = content;
                     }
                 }
             }
-            return typeof(preparedData) === "undefined" ? [] : preparedData.childNodes;
         }
 
-        function prepareWaybillData(data) {
-            let keys = ["W_NAME", "UNIT_ID", "QUANTITY", "AMOUNT", "PRICE", "TOTAL_PRICE", "BAR_CODE"]
-            let goodsData = data["soap:Envelope"]["soap:Body"]["get_waybillResponse"]["get_waybillResult"]["WAYBILL"]["GOODS_LIST"]["GOODS"];
-            let filteredData;
-            
-            !Array.isArray(goodsData) ? goodsData = [goodsData] : null;
-            filteredData = goodsData.map(item => {
-                let newItem = {};
-                keys.forEach((key) => {
-                    newItem[key] = item[key];
-                })
-                // this may be incorrect sometimes
-                newItem["TOTAL_PRICE"] = Math.round((item["QUANTITY"] * item["AMOUNT"]) * 100) / 100;
-                return newItem;
-            })
-            return filteredData;
-        }
 
         function fillTable(data, filterValue) {
+            const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
+            let preparedData = data.querySelector("WAYBILL_LIST");
+            preparedData = typeof(preparedData) === "undefined" ? [] : preparedData.childNodes;
+
             let lastClicked = 0;
             let total = 0;
-            
             const rows = document.querySelector("#rows");
             rows.innerHTML = "";
-            for (const obj of data) {
+            for (const obj of preparedData) {
                 if (filterValue.length && 
-                    (!obj["SELLER_NAME"].includes(filterValue) && !obj["ID"].includes(filterValue) && !obj["BUYER_TIN"].includes(filterValue))) {
+                    (!obj.querySelector("SELLER_NAME").textContent.includes(filterValue) && !obj.querySelector("ID").textContent.includes(filterValue) && !obj.textContent("BUYER_TIN").textContent.includes(filterValue))) {
                     continue;
                 }
                 const tbodyRow = rows.insertRow();
 
-                total += parseFloat(obj.getElementsByTagName("FULL_AMOUNT")[0].textContent);
-                obj.getElementsByTagName("TYPE")[0].textContent = types[parseInt(obj.getElementsByTagName("TYPE")[0].textContent)-1];
-                obj.getElementsByTagName("STATUS")[0].textContent = statuses[parseInt(obj.getElementsByTagName("STATUS")[0].textContent)]
-                obj.getElementsByTagName("BEGIN_DATE")[0].textContent = obj.getElementsByTagName("BEGIN_DATE")[0].textContent.replace("T", " ")
+                total += parseFloat(obj.querySelector("FULL_AMOUNT").textContent);
+                obj.querySelector("TYPE").textContent = types[parseInt(obj.querySelector("TYPE").textContent)-1];
+                obj.querySelector("STATUS").textContent = statuses[parseInt(obj.querySelector("STATUS").textContent)]
+                obj.querySelector("BEGIN_DATE").textContent = obj.querySelector("BEGIN_DATE").textContent.replace("T", " ")
 
                 tbodyRow.addEventListener("click", () => {
                     if (lastClicked) {
                         lastClicked.style.backgroundColor = "white"
                     }
                     lastClicked = tbodyRow;
-                    let xml = prepareGetwaybillXML(obj["ID"]);
-                    fetchData(xml).then(data => {
-                        let filteredData = prepareWaybillData(data);
-                        fillProductsTable(filteredData);
+                    let xml = prepareGetwaybillXML(obj.querySelector("ID").textContent);
+                    fetchData(xml).then(preparedData => {
+                        fillProductsTable(preparedData);
                     })
                 })
 
@@ -313,7 +291,8 @@
                 })
 
                 for (let key of obj.childNodes) {
-                    let content = obj.getElementsByTagName(key.nodeName)[0].textContent
+                    if (!keys.includes(key.nodeName)) {continue}
+                    let content = obj.querySelector(key.nodeName).textContent
                     const cell = tbodyRow.insertCell();
                     cell.textContent = content;
                 }
@@ -340,8 +319,8 @@
                 theadRow.appendChild(th)
             })
             
-            let preparedData = prepareWaybillsData(data);
-            fillTable(preparedData, "");
+            // let preparedData = prepareWaybillsData(data);
+            fillTable(data, "");
         })
 
     </script>
