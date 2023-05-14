@@ -135,15 +135,15 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
     <script>
-     
-        const getWaybillsXML = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>${new Date().toISOString().slice(0,10)}</begin_date_s><begin_date_e>${new Date().toISOString().slice(0,10)}</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>`;
+        // ${new Date().toISOString().slice(0,10)}
+        const getWaybillsXML = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>2023-05-12</begin_date_s><begin_date_e>${new Date().toISOString().slice(0,10)}</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>`;
         const getWaybillXML = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><get_waybill xmlns="http://tempuri.org/"><su>mega:405453959</su><sp>12345654321</sp><waybill_id>int</waybill_id></get_waybill></soap:Body></soap:Envelope>';
 
         const types = ["შიდა გადაზიდვა", "ტრანსპორტირებით", "ტრანსპორტირების გარეშე", "დისტრიბუცია", "უკან დაბრუნება", "ქვე-ზედნადები"];
         const statuses = ["შენახული", "აქტივირებული", "დასრულებული"]
         const units = {"1":"ცალი", "2":"კგ", "3":"გრამი", "4":"ლიტრი", "5":"ტონა", "7":"სანტიმეტრი", "8":"მეტრი", "9":"კილომეტრი", "10":"კვ.სმ", "11":"კვ.მ", "12":"კუბ.მ", "13":"მილიმეტრი",  "99":"სხვა", "14":"შეკვრა"}
-        const parser = new DOMParser();
         const fields1 = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
+        const parser = new DOMParser();
 
         async function fetchData(xml) {
             const response = await fetch("/fetch_data", {
@@ -153,39 +153,36 @@
                 },
                 body: xml,
             });
-            const data = await response.json();
-            return data;
+            let data = await response.text();
+            data = data.replace(/\\(.)/g, "$1").slice(1, -1);
+            let dataXML = parser.parseFromString(data, "application/xml");
+            return dataXML;
         }
 
-        function replaceStatusesOrTypes(xmlString, statuses, field) {
-            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-
-            const elem = xmlDoc.getElementsByTagName(field)[0];
+        function replaceStatusesOrTypes(xmlObj, statuses, field) {
+            const elem = xmlObj.getElementsByTagName(field)[0];
             let str = "";
             statuses.forEach(s => {
                 str += "," + s
             })
             str += ",";
             elem.textContent = str;
-            return new XMLSerializer().serializeToString(xmlDoc);
+            return xmlObj;
         }
 
-        function replaceDates(xmlString, newDate1, newDate2) {
-            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-
-            const dateBegineElem = xmlDoc.getElementsByTagName("begin_date_e")[0];
-            const dateBeginsElem = xmlDoc.getElementsByTagName("begin_date_s")[0];
+        function replaceDates(xmlObj, newDate1, newDate2) {
+            const dateBegineElem = xmlObj.getElementsByTagName("begin_date_e")[0];
+            const dateBeginsElem = xmlObj.getElementsByTagName("begin_date_s")[0];
 
             dateBeginsElem.textContent = newDate1;
             dateBegineElem.textContent = newDate2;
-
-            return new XMLSerializer().serializeToString(xmlDoc);
+            return xmlObj;
         }
 
-        function replaceFilterValue(xmlString, value) {
-            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-            const filterEleme = xmlDoc.getElementsByTagName("")[0];
-        }
+        // function replaceFilterValue(xmlString, value) {
+        //     const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+        //     const filterEleme = xmlDoc.getElementsByTagName("")[0];
+        // }
 
         function filterData() {
             let startDate = document.querySelector("#startDate");
@@ -196,28 +193,28 @@
 
             let statusesValues = [];
             let typesValues = [];
-            let filteredXML = getWaybillsXML;
+            let filteredXMLObj = parser.parseFromString(getWaybillsXML, "application/xml");
 
             if (statuses.length) {
                 statuses.forEach(item => {
                     statusesValues.push(item.value);
                 })
-                filteredXML = replaceStatusesOrTypes(filteredXML, statusesValues, "statuses");
+                filteredXMLObj = replaceStatusesOrTypes(filteredXMLObj, statusesValues, "statuses");
             }
             
             if (types.length) {
                 types.forEach(item => {
                     typesValues.push(item.value);
                 })
-                filteredXML = replaceStatusesOrTypes(filteredXML, typesValues, "itypes");
+                filteredXMLObj = replaceStatusesOrTypes(filteredXMLObj, typesValues, "itypes");
             }
 
             if ((startDate.value + endDate.value).length) {
-                filteredXML = replaceDates(filteredXML, startDate.value, endDate.value);
+                filteredXMLObj = replaceDates(filteredXMLObj, startDate.value, endDate.value);
             }
-            
-            fetchData(filteredXML).then((data) => {
-                fillTable(prepareWaybills(data), filterValue);
+            let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
+            fetchData(xmlString).then((data) => {
+                fillTable(prepareWaybillsData(data), filterValue);
             });
         }
 
@@ -242,9 +239,18 @@
             }
         }
 
-        function prepareWaybills(data) {
-            let preparedData = data["soap:Envelope"]["soap:Body"]["get_buyer_waybillsResponse"]["get_buyer_waybillsResult"]["WAYBILL_LIST"]["WAYBILL"];
-            return typeof(preparedData) === "undefined" ? [] : preparedData;
+        function prepareWaybillsData(data) {
+            const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
+            let preparedData = data.getElementsByTagName("WAYBILL_LIST")[0];
+            for (const childElement of preparedData.children) {
+                for (let i = childElement.children.length - 1; i >= 0; i--) {
+                    const childField = childElement.children[i];
+                    if (!keys.includes(childField.nodeName)) {
+                        childElement.removeChild(childField);
+                    }
+                }
+            }
+            return typeof(preparedData) === "undefined" ? [] : preparedData.childNodes;
         }
 
         function prepareWaybillData(data) {
@@ -265,65 +271,55 @@
             return filteredData;
         }
 
-        const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
-
         function fillTable(data, filterValue) {
             let lastClicked = 0;
             let total = 0;
             
-            !Array.isArray(data) ? data = [data] : null;
-            let filteredData = data.map(item => {;
-                let newItem = {};
-                keys.forEach((key) => {
-                    newItem[key] = item[key];
-                })
-                return newItem;
-            })
-            
             const rows = document.querySelector("#rows");
             rows.innerHTML = "";
-            for (let obj of filteredData) {
+            for (const obj of data) {
                 if (filterValue.length && 
                     (!obj["SELLER_NAME"].includes(filterValue) && !obj["ID"].includes(filterValue) && !obj["BUYER_TIN"].includes(filterValue))) {
                     continue;
                 }
-                else {
-                    const tbodyRow = rows.insertRow();
-                    total += parseFloat(obj["FULL_AMOUNT"]);
-                    obj["TYPE"] = types[parseInt(obj["TYPE"])-1];
-                    obj["STATUS"] = statuses[parseInt(obj["STATUS"])]
-                    obj["BEGIN_DATE"] = obj["BEGIN_DATE"].replace("T", " ")
+                const tbodyRow = rows.insertRow();
 
-                    tbodyRow.addEventListener("click", () => {
-                        if (lastClicked) {
-                            lastClicked.style.backgroundColor = "white"
-                        }
-                        lastClicked = tbodyRow;
-                        let xml = prepareGetwaybillXML(obj["ID"]);
-                        fetchData(xml).then(data => {
-                            let filteredData = prepareWaybillData(data);
-                            fillProductsTable(filteredData);
-                        })
-                    })
-                    tbodyRow.addEventListener("mouseover", () => {
-                        tbodyRow.style.backgroundColor = "#3236392f";
-                        tbodyRow.style.cursor = "pointer";
-                    })
-                    tbodyRow.addEventListener("mouseleave", () => {
-                        if (tbodyRow !== lastClicked) {
-                            tbodyRow.style.backgroundColor = "white"
-                        }
-                    })
+                total += parseFloat(obj["FULL_AMOUNT"]);
+                obj.getElementsByTagName("TYPE")[0].textContent = types[parseInt(obj.getElementsByTagName("TYPE")[0])-1];
+                obj.getElementsByTagName("STATUS")[0].textContent = statuses[parseInt(obj.getElementsByTagName("STATUS")[0])]
+                obj.getElementsByTagName("BEGIN_DATE")[0].textContent = obj.getElementsByTagName("BEGIN_DATE")[0].textContent.replace("T", " ")
 
-                    for (let key in obj) {
-                        let content = obj[key];
-                        const cell = tbodyRow.insertCell();
-                        cell.textContent = content;
+                tbodyRow.addEventListener("click", () => {
+                    if (lastClicked) {
+                        lastClicked.style.backgroundColor = "white"
                     }
+                    lastClicked = tbodyRow;
+                    let xml = prepareGetwaybillXML(obj["ID"]);
+                    fetchData(xml).then(data => {
+                        let filteredData = prepareWaybillData(data);
+                        fillProductsTable(filteredData);
+                    })
+                })
+
+                tbodyRow.addEventListener("mouseover", () => {
+                    tbodyRow.style.backgroundColor = "#3236392f";
+                    tbodyRow.style.cursor = "pointer";
+                })
+
+                tbodyRow.addEventListener("mouseleave", () => {
+                    if (tbodyRow !== lastClicked) {
+                        tbodyRow.style.backgroundColor = "white"
+                    }
+                })
+
+                for (let key of obj.childNodes) {
+                    let content = obj.getElementsByTagName(key.nodeName)[0].textContent
+                    console.log(content)
+                    const cell = tbodyRow.insertCell();
+                    cell.textContent = content;
                 }
             }
             document.querySelector("#total").value = Math.round(total * 100) / 100;;
-                    
         }
 
         fetchData(getWaybillsXML).then((data) => {
@@ -345,7 +341,7 @@
                 theadRow.appendChild(th)
             })
             
-            let preparedData = prepareWaybills(data);
+            let preparedData = prepareWaybillsData(data);
             fillTable(preparedData, "");
         })
 

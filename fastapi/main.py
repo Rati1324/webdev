@@ -26,8 +26,9 @@ async def fetch_data(xml: str = Body()):
         "Content-Length":"830"
     }
     response = requests.post("https://services.rs.ge/WayBillService/WayBillService.asmx", data=xml, headers=headers).text
-    xml_dict = xmltodict.parse(response)
-    return xml_dict
+    # xml_dict = xmltodict.parse(response)
+    # return xml_dict
+    return response
 
 @app.get("/")
 def read_root(request: Request):
