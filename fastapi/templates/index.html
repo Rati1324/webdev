@@ -178,6 +178,15 @@
             return xmlObj;
         }
 
+        let multipleDatesData;
+        function multipleDates(data) {
+            console.log("sda")
+            console.log(data.querySelector("WAYBILL_LIST"))
+            if (typeof(multipleDatesData) == "undefined") {
+                multipleDatesData = data;
+            }
+        }
+
         function filterData() {
             let startDate = document.querySelector("#startDate");
             let endDate = document.querySelector("#endDate");
@@ -204,34 +213,45 @@
             }
 
             function dateToString(date) {
-                return `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`
+                let month = (date.getMonth()+1).toString();
+                parseInt(month) < 10 ? month = "0" + month : null;
+                let stringDate = `${date.getFullYear()}-${month}-${date.getDate()}`
+                return stringDate
             }
-
+            let temp = true;
             if ((startDate.value + endDate.value).length) {
-                filteredXMLObj = replaceDates(filteredXMLObj, startDate.value, endDate.value);
+                // filteredXMLObj = replaceDates(filteredXMLObj, startDate.value, endDate.value);
+                let data;
                 let startDateObj = new Date(startDate.value);
                 let endDateObj = new Date(endDate.value);
                 let range = endDateObj.getDate() - startDateObj.getDate();
 
-                let dates = [startDateObj];
                 if (range > 3) {
+                    temp = false;
+                    let dates = [startDateObj];
                     let num = Math.floor(range/3);
-                    console.log(num)
                     for (let i = 0; i < num; i++) {
                         let curDate = new Date(dates[i]);
-                        // console.log(curDate)
                         curDate.setDate(curDate.getDate() + 3)
-                        // console.log(curDate)
                         dates.push(curDate)
+                    }
+                    console.log(dates)
+                    for (let i = 0; i < dates.length - 1; i++) {
+                        filteredXMLObj = replaceDates(filteredXMLObj, dateToString(dates[i]), dateToString(dates[i+1]));
+                        let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
+                        fetchData(xmlString).then((data) => {
+                            multipleDates(data, filterValue);
+                        });
                     }
                     // let outOfRange = range % 3;
                 }
-                console.log(dates)
             }
-            let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
-            fetchData(xmlString).then((data) => {
-                fillTable(data, filterValue);
-            });
+            if (temp) {
+                let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
+                fetchData(xmlString).then((data) => {
+                    fillTable(data, filterValue);
+                });
+            }
         }
 
         function prepareGetwaybillXML(waybillID) {
