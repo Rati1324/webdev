@@ -13,7 +13,7 @@
     <title>RS</title>
 </head>
 <body>
-    <div class="container">
+    <div class="container main_container" >
         <div class="row upper_panel d-flex justify-content-start align-items-center" style="">
             <div class="col-md-2 d-flex flex-column justify-content-center align-items-center">
                 <span class="d-flex justify-content-center">სტატუსები</span>
@@ -72,11 +72,11 @@
 
             <div class="col-md-2">
                 <div class="inner_container d-flex flex-column justify-content-center" style="border: none">
-                    <span class="d-flex justify-content-center" style="font-size: 1rem;">ფილტრაცია</span>
+                    <span class="d-flex justify-content-center" >ფილტრაცია</span>
                     <div class="d-flex justify-content-center">
                         <input type="text" placeholder="" class="filter_input" id="filterValue">
                     </div>
-                    <span class="d-flex justify-content-center" style="font-size: 1rem;">ჯამი</span>
+                    <span class="d-flex justify-content-center">ჯამი</span>
                     <div class="d-flex justify-content-center">
                         <input type="text" placeholder="" class="filter_input" id="total" readonly>
                     </div>
@@ -135,8 +135,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
     <script>
-        // ${new Date().toISOString().slice(0,10)}
-        const getWaybillsXML = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>2023-05-12</begin_date_s><begin_date_e>${new Date().toISOString().slice(0,10)}</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>`;
+        const getWaybillsXML = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">  <soap:Body><get_buyer_waybills xmlns="http://tempuri.org/">      <su>mega:405453959</su>      <sp>12345654321</sp><itypes>,1,2,3,6,</itypes><seller_tin /><statuses>,1,2,</statuses><car_number /><begin_date_s>${new Date().toISOString().slice(0,10)}</begin_date_s><begin_date_e>${new Date().toISOString().slice(0,10)}</begin_date_e><create_date_s xsi:nil="true" /><create_date_e xsi:nil="true" /><driver_tin />><delivery_date_s xsi:nil="true" /><delivery_date_e xsi:nil="true" /><full_amount xsi:nil="true" /><waybill_number /><close_date_s xsi:nil="true" /><close_date_e xsi:nil="true" /><s_user_ids /><comment /></get_buyer_waybills></soap:Body></soap:Envelope>`;
         const getWaybillXML = '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><get_waybill xmlns="http://tempuri.org/"><su>mega:405453959</su><sp>12345654321</sp><waybill_id>int</waybill_id></get_waybill></soap:Body></soap:Envelope>';
 
         const types = ["შიდა გადაზიდვა", "ტრანსპორტირებით", "ტრანსპორტირების გარეშე", "დისტრიბუცია", "უკან დაბრუნება", "ქვე-ზედნადები"];
@@ -204,8 +203,30 @@
                 filteredXMLObj = replaceStatusesOrTypes(filteredXMLObj, typesValues, "itypes");
             }
 
+            function dateToString(date) {
+                return `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`
+            }
+
             if ((startDate.value + endDate.value).length) {
                 filteredXMLObj = replaceDates(filteredXMLObj, startDate.value, endDate.value);
+                let startDateObj = new Date(startDate.value);
+                let endDateObj = new Date(endDate.value);
+                let range = endDateObj.getDate() - startDateObj.getDate();
+
+                let dates = [startDateObj];
+                if (range > 3) {
+                    let num = Math.floor(range/3);
+                    console.log(num)
+                    for (let i = 0; i < num; i++) {
+                        let curDate = new Date(dates[i]);
+                        // console.log(curDate)
+                        curDate.setDate(curDate.getDate() + 3)
+                        // console.log(curDate)
+                        dates.push(curDate)
+                    }
+                    // let outOfRange = range % 3;
+                }
+                console.log(dates)
             }
             let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
             fetchData(xmlString).then((data) => {
@@ -236,21 +257,18 @@
                 newElem.textContent = Math.round((quantity * amount) * 100) / 100;
                 obj.insertBefore(newElem, obj.querySelector("BAR_CODE"));
 
-                for (let key of obj.childNodes) {
-                    if (keys.includes(key.nodeName)) {
-                        let content = obj.querySelector(key.nodeName).textContent;
-                        let cell2 = tbodyRow2.insertCell();
-                        cell2.textContent = content;
-                    }
+                for (let key of keys) {
+                    let content = obj.querySelector(key).textContent;
+                    let cell2 = tbodyRow2.insertCell();
+                    cell2.textContent = content;
                 }
             }
         }
 
-
         function fillTable(data, filterValue) {
             const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
             let preparedData = data.querySelector("WAYBILL_LIST");
-            preparedData = typeof(preparedData) === "undefined" ? [] : preparedData.childNodes;
+            preparedData = (typeof(preparedData) === "undefined" || typeof(preparedData) === null) ? [] : preparedData.childNodes;
 
             let lastClicked = 0;
             let total = 0;
@@ -258,7 +276,7 @@
             rows.innerHTML = "";
             for (const obj of preparedData) {
                 if (filterValue.length && 
-                    (!obj.querySelector("SELLER_NAME").textContent.includes(filterValue) && !obj.querySelector("ID").textContent.includes(filterValue) && !obj.textContent("BUYER_TIN").textContent.includes(filterValue))) {
+                    (!obj.querySelector("SELLER_NAME").textContent.includes(filterValue) && !obj.querySelector("ID").textContent.includes(filterValue) && !obj.querySelector("BUYER_TIN").textContent.includes(filterValue))) {
                     continue;
                 }
                 const tbodyRow = rows.insertRow();
@@ -290,9 +308,8 @@
                     }
                 })
 
-                for (let key of obj.childNodes) {
-                    if (!keys.includes(key.nodeName)) {continue}
-                    let content = obj.querySelector(key.nodeName).textContent
+                for (let key of keys) {
+                    let content = obj.querySelector(key).textContent
                     const cell = tbodyRow.insertCell();
                     cell.textContent = content;
                 }
@@ -319,7 +336,26 @@
                 theadRow.appendChild(th)
             })
             
-            // let preparedData = prepareWaybillsData(data);
+            let checkboxes = document.querySelectorAll("input[type='checkbox']");
+
+            checkboxes.forEach((checkbox) => {
+                if (!["0","4","5"].includes(checkbox.value)) {checkbox.checked = true;}
+                checkbox.addEventListener("change", () => {
+                    filterData();
+                });
+            });
+
+            document.querySelector("#filterValue").addEventListener("keypress", function(event) {
+                if (event.keyCode === 13) {
+                    filterData();
+                }
+            });
+            // startDate.addEventListener("change", () => {
+            //     filterData();
+            // })
+            // endDate.addEventListener("change", () => {
+            //     filterData();
+
             fillTable(data, "");
         })
 

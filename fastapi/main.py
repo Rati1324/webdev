@@ -23,11 +23,11 @@ app.mount("/static", StaticFiles(directory="./static"), name="static")
 async def fetch_data(xml: str = Body()):
     headers = {
         "Content-Type": "text/xml; charset: utf-8",
-        "Content-Length":"830"
+        # "Content-Length":"830"
     }
-    response = requests.post("https://services.rs.ge/WayBillService/WayBillService.asmx", data=xml, headers=headers).text
-    # xml_dict = xmltodict.parse(response)
-    # return xml_dict
+    # response = requests.post("https://services.rs.ge/WayBillService/WayBillService.asmx", data=xml, headers=headers).text
+    response = requests.post("https://online.megaplus.ge/rs2", data=xml, headers=headers).text
+    print(response)
     return response
 
 @app.get("/")
