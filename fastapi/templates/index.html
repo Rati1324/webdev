@@ -144,7 +144,7 @@
         const fields1 = ["ზედნადები", "ტიპი", "სტატუსი", "მომწოდებელი", "საიდენტიფიკაციო", "თანხა", "ტრანსპ. დასასრული", "დაწყ. თარიღი"];
         const parser = new DOMParser();
 
-        async function fetchData(xml) {
+        async function fetchData(xml, promise) {
             const response = await fetch("/fetch_data", {
                 method: "POST",
                 headers: {
@@ -152,10 +152,15 @@
                 },
                 body: xml,
             });
-            let data = await response.text();
-            data = data.replace(/\\(.)/g, "$1").slice(1, -1);
-            let dataXML = parser.parseFromString(data, "application/xml");
-            return dataXML;
+            if (!promise) {
+                let data = await response.text();
+                data = data.replace(/\\(.)/g, "$1").slice(1, -1);
+                let dataXML = parser.parseFromString(data, "application/xml");
+                return dataXML;
+            }
+            else {
+                return response;
+            }
         }
 
         function replaceStatusesOrTypes(xmlObj, statuses, field) {
@@ -178,16 +183,45 @@
             return xmlObj;
         }
 
-        let multipleDatesData;
-        function multipleDates(data) {
-            console.log("sda")
-            console.log(data.querySelector("WAYBILL_LIST"))
-            if (typeof(multipleDatesData) == "undefined") {
-                multipleDatesData = data;
-            }
+        let multipleDatesData = 0;
+        function temp(data) {
+            multipleDatesData = data;
+            console.log(data);
         }
 
-        function filterData() {
+        async function fetchFromMultipleDates(dates, filteredXMLObj) {
+            let multipleDatesData = 0;
+            let xmlString;
+            
+            // xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
+            // xmlString = filteredXMLObj;
+            // let data;
+            // for (item of dates) {
+            //     data = await fetchData(xmlString, 1);
+            //     multipleDatesData = data;
+            //     console.log(multipleDatesData)
+            // }
+            // console.log("hi");
+            // })
+            let data;
+            for (let [index, item] of dates.slice(0, dates.length-1).entries()) {
+                filteredXMLObj = replaceDates(filteredXMLObj, item, dates[index+1]);
+                xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
+                data = await fetchData(xmlString, 0) 
+                let waybills = data.querySelector("WAYBILL_LIST");
+                if (multipleDatesData) {
+                    for (const elem of waybills.querySelectorAll("WAYBILL")) {
+                        multipleDatesData.appendChild(elem);
+                    }
+                }
+                else { 
+                    multipleDatesData = waybills; 
+                }
+            }
+            return multipleDatesData;
+        }
+
+        async function filterData() {
             let startDate = document.querySelector("#startDate");
             let endDate = document.querySelector("#endDate");
             let statuses = document.querySelectorAll(".status:checked");
@@ -228,21 +262,17 @@
 
                 if (range > 3) {
                     temp = false;
-                    let dates = [startDateObj];
+                    let dates = [dateToString(startDateObj)];
                     let num = Math.floor(range/3);
                     for (let i = 0; i < num; i++) {
                         let curDate = new Date(dates[i]);
                         curDate.setDate(curDate.getDate() + 3)
-                        dates.push(curDate)
+                        dates.push(dateToString(curDate))
                     }
-                    console.log(dates)
-                    for (let i = 0; i < dates.length - 1; i++) {
-                        filteredXMLObj = replaceDates(filteredXMLObj, dateToString(dates[i]), dateToString(dates[i+1]));
-                        let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
-                        fetchData(xmlString).then((data) => {
-                            multipleDates(data, filterValue);
-                        });
-                    }
+
+                    data = await fetchFromMultipleDates(dates, filteredXMLObj);
+                    console.log(data)
+
                     // let outOfRange = range % 3;
                 }
             }
@@ -312,7 +342,7 @@
                     }
                     lastClicked = tbodyRow;
                     let xml = prepareGetwaybillXML(obj.querySelector("ID").textContent);
-                    fetchData(xml).then(preparedData => {
+                    fetchData(xml, 0).then(preparedData => {
                         fillProductsTable(preparedData);
                     })
                 })
@@ -336,8 +366,8 @@
             }
             document.querySelector("#total").value = Math.round(total * 100) / 100;;
         }
-
-        fetchData(getWaybillsXML).then((data) => {
+        
+        fetchData(getWaybillsXML, 0).then((data) => {
             let thead = document.querySelector("#columns");
             let theadRow = thead.insertRow();
             let thead2 = document.querySelector("#columns2");
