@@ -152,15 +152,10 @@
                 },
                 body: xml,
             });
-            if (!promise) {
-                let data = await response.text();
-                data = data.replace(/\\(.)/g, "$1").slice(1, -1);
-                let dataXML = parser.parseFromString(data, "application/xml");
-                return dataXML;
-            }
-            else {
-                return response;
-            }
+            let data = await response.text();
+            data = data.replace(/\\(.)/g, "$1").slice(1, -1);
+            let dataXML = parser.parseFromString(data, "application/xml");
+            return dataXML;
         }
 
         function replaceStatusesOrTypes(xmlObj, statuses, field) {
@@ -178,35 +173,40 @@
             const dateBegineElem = xmlObj.querySelector("begin_date_e");
             const dateBeginsElem = xmlObj.querySelector("begin_date_s");
 
-            dateBeginsElem.textContent = newDate1;
-            dateBegineElem.textContent = newDate2;
+            dateBeginsElem.textContent = newDate1 + "T00:00:00";
+            dateBegineElem.textContent = newDate2 + "T23:59:59";
             return xmlObj;
         }
 
         let multipleDatesData = 0;
         function temp(data) {
             multipleDatesData = data;
-            console.log(data);
+        }
+
+        function dateToString(date) {
+            let month = (date.getMonth()+1).toString();
+            let day = (date.getDate()).toString();
+            parseInt(month) < 10 ? month = "0" + month : null;
+            parseInt(day) < 10 ? day = "0" + day : null;
+            let stringDate = `${date.getFullYear()}-${month}-${day}`
+            return stringDate
         }
 
         async function fetchFromMultipleDates(dates, filteredXMLObj) {
             let multipleDatesData = 0;
             let xmlString;
-            
-            // xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
-            // xmlString = filteredXMLObj;
-            // let data;
-            // for (item of dates) {
-            //     data = await fetchData(xmlString, 1);
-            //     multipleDatesData = data;
-            //     console.log(multipleDatesData)
-            // }
-            // console.log("hi");
-            // })
             let data;
+            let startDate;
+            dates[dates.length-1].setDate(dates[dates.length-1].getDate() + 1);
             for (let [index, item] of dates.slice(0, dates.length-1).entries()) {
-                filteredXMLObj = replaceDates(filteredXMLObj, item, dates[index+1]);
+                startDate = item;
+                if (index > 0) {
+                    startDate.setDate(startDate.getDate() + 1)
+                }
+
+                filteredXMLObj = replaceDates(filteredXMLObj, dateToString(startDate), dateToString(dates[index+1]));
                 xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
+                console.log(dates)
                 data = await fetchData(xmlString, 0) 
                 let waybills = data.querySelector("WAYBILL_LIST");
                 if (multipleDatesData) {
@@ -245,42 +245,36 @@
                 })
                 filteredXMLObj = replaceStatusesOrTypes(filteredXMLObj, typesValues, "itypes");
             }
-
-            function dateToString(date) {
-                let month = (date.getMonth()+1).toString();
-                parseInt(month) < 10 ? month = "0" + month : null;
-                let stringDate = `${date.getFullYear()}-${month}-${date.getDate()}`
-                return stringDate
-            }
-            let temp = true;
+            
             if ((startDate.value + endDate.value).length) {
-                // filteredXMLObj = replaceDates(filteredXMLObj, startDate.value, endDate.value);
                 let data;
                 let startDateObj = new Date(startDate.value);
                 let endDateObj = new Date(endDate.value);
                 let range = endDateObj.getDate() - startDateObj.getDate();
 
-                if (range > 3) {
-                    temp = false;
-                    let dates = [dateToString(startDateObj)];
+                if (range >= 3) {
+                    let dates = [startDateObj];
                     let num = Math.floor(range/3);
+                    let curDate;
                     for (let i = 0; i < num; i++) {
-                        let curDate = new Date(dates[i]);
-                        curDate.setDate(curDate.getDate() + 3)
-                        dates.push(dateToString(curDate))
+                        curDate = new Date(dates[i]);
+                        curDate.setDate(curDate.getDate() + 2)
+                        dates.push(curDate)
                     }
-
+                    if (range % 3) {
+                        curDate = new Date(dates[dates.length-1]);
+                        curDate.setDate(curDate.getDate() + (range % 3));
+                        dates.push(curDate);
+                    }
                     data = await fetchFromMultipleDates(dates, filteredXMLObj);
-                    console.log(data)
-
-                    // let outOfRange = range % 3;
-                }
-            }
-            if (temp) {
-                let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
-                fetchData(xmlString).then((data) => {
                     fillTable(data, filterValue);
-                });
+                }
+                else {
+                    filteredXMLObj = replaceDates(filteredXMLObj, startDate.value, endDate.value);
+                    let xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
+                    data = await fetchData(xmlString);
+                    fillTable(data.querySelector("WAYBILL_LIST"), filterValue);
+                }
             }
         }
 
@@ -317,7 +311,7 @@
 
         function fillTable(data, filterValue) {
             const keys = ["ID", "TYPE", "STATUS", "SELLER_NAME", "BUYER_TIN", "FULL_AMOUNT", "END_ADDRESS", "BEGIN_DATE"];
-            let preparedData = data.querySelector("WAYBILL_LIST");
+            let preparedData = data;
             preparedData = (typeof(preparedData) === "undefined" || typeof(preparedData) === null) ? [] : preparedData.childNodes;
 
             let lastClicked = 0;
@@ -400,13 +394,14 @@
                     filterData();
                 }
             });
-            // startDate.addEventListener("change", () => {
-            //     filterData();
-            // })
-            // endDate.addEventListener("change", () => {
-            //     filterData();
+            startDate.addEventListener("change", () => {
+                filterData();
+            })
+            endDate.addEventListener("change", () => {
+                filterData();
+            })
 
-            fillTable(data, "");
+            fillTable(data.querySelector("WAYBILL_LIST"), "");
         })
 
     </script>
