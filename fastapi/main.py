@@ -27,7 +27,6 @@ async def fetch_data(xml: str = Body()):
     }
     # response = requests.post("https://services.rs.ge/WayBillService/WayBillService.asmx", data=xml, headers=headers).text
     response = requests.post("https://online.megaplus.ge/rs2", data=xml, headers=headers).text
-    print(response)
     return response
 
 @app.get("/")

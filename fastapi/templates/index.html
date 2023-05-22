@@ -197,7 +197,6 @@
             let xmlString;
             let data;
             let startDate;
-            dates[dates.length-1].setDate(dates[dates.length-1].getDate() + 1);
             for (let [index, item] of dates.slice(0, dates.length-1).entries()) {
                 startDate = item;
                 if (index > 0) {
@@ -206,7 +205,6 @@
 
                 filteredXMLObj = replaceDates(filteredXMLObj, dateToString(startDate), dateToString(dates[index+1]));
                 xmlString = new XMLSerializer().serializeToString(filteredXMLObj);
-                console.log(dates)
                 data = await fetchData(xmlString, 0) 
                 let waybills = data.querySelector("WAYBILL_LIST");
                 if (multipleDatesData) {
@@ -255,15 +253,18 @@
                 if (range >= 3) {
                     let dates = [startDateObj];
                     let num = Math.floor(range/3);
-                    let curDate;
-                    for (let i = 0; i < num; i++) {
+                    let curDate = new Date(dates[0]);
+                    curDate.setDate(curDate.getDate() + 2);
+                    dates.push(curDate);
+
+                    for (let i = 1; i < num; i++) {
                         curDate = new Date(dates[i]);
-                        curDate.setDate(curDate.getDate() + 2)
+                        curDate.setDate(curDate.getDate() + 3)
                         dates.push(curDate)
                     }
-                    if (range % 3) {
+                    if (range % 3 + 1) {
                         curDate = new Date(dates[dates.length-1]);
-                        curDate.setDate(curDate.getDate() + (range % 3));
+                        curDate.setDate(curDate.getDate() + (range % 3 + 1));
                         dates.push(curDate);
                     }
                     data = await fetchFromMultipleDates(dates, filteredXMLObj);
@@ -394,12 +395,12 @@
                     filterData();
                 }
             });
-            startDate.addEventListener("change", () => {
-                filterData();
-            })
-            endDate.addEventListener("change", () => {
-                filterData();
-            })
+            // startDate.addEventListener("change", () => {
+            //     filterData();
+            // })
+            // endDate.addEventListener("change", () => {
+            //     filterData();
+            // })
 
             fillTable(data.querySelector("WAYBILL_LIST"), "");
         })
